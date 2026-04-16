@@ -1,0 +1,32 @@
+{
+  "upload_id": "9ec79409-96e9-4da8-9166-306e7a7a816a",
+  "file_type": "pdf",
+  "document_type": "payslip",
+  "classification_confidence": 1.0,
+  "extraction_method": "pdfplumber",
+  "total_documents": 1,
+  "documents": [
+    {
+      "document_number": 1,
+      "document_type": "payslip",
+      "extracted_data": {
+        "name": null,
+        "id_number": "AMAUN (RM)",
+        "gross_income": "0.00",
+        "total_deduction": "5224.34",
+        "net_income": "1508.50",
+        "month_year": "01/2025"
+      },
+      "confidence_score": 0.67,
+      "text_length": 1604
+    }
+  ],
+  "summary": {
+    "payslips": 1,
+    "other": 0,
+    "average_confidence": 0.67
+  },
+  "processing_completed_at": "2026-04-16T17:13:17.420502",
+  "original_file": "raw/9ec79409-96e9-4da8-9166-306e7a7a816a.pdf",
+  "total_text_length": 1604
+}

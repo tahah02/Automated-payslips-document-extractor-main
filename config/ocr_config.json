@@ -1,0 +1,24 @@
+{
+  "engine": "easyocr",
+  "language": "en",
+  "confidence_threshold": 0.5,
+  "use_angle_cls": true,
+  "paddleocr": {
+    "use_angle_cls": true,
+    "lang": "en",
+    "use_gpu": false
+  },
+  "easyocr": {
+    "languages": ["en"],
+    "gpu": false
+  },
+  "tesseract": {
+    "language": "eng",
+    "config": "--psm 6"
+  },
+  "image_processing": {
+    "dpi": 300,
+    "zoom_factor": 2,
+    "format": "png"
+  }
+}

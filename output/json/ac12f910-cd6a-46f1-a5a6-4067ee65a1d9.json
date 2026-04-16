@@ -1,0 +1,32 @@
+{
+  "upload_id": "ac12f910-cd6a-46f1-a5a6-4067ee65a1d9",
+  "file_type": "pdf",
+  "document_type": "payslip",
+  "classification_confidence": 0.91,
+  "extraction_method": "pdfplumber",
+  "total_documents": 1,
+  "documents": [
+    {
+      "document_number": 1,
+      "document_type": "payslip",
+      "extracted_data": {
+        "name": "Robson Andreas No",
+        "id_number": "880213-49-5245",
+        "gross_income": "40000.00",
+        "total_deduction": "9389.10",
+        "net_income": "30601.00",
+        "month_year": "01/2025"
+      },
+      "confidence_score": 1.0,
+      "text_length": 873
+    }
+  ],
+  "summary": {
+    "payslips": 1,
+    "other": 0,
+    "average_confidence": 1.0
+  },
+  "processing_completed_at": "2026-04-16T18:41:42.573533",
+  "original_file": "raw/ac12f910-cd6a-46f1-a5a6-4067ee65a1d9.pdf",
+  "total_text_length": 873
+}

@@ -1,0 +1,37 @@
+{
+  "upload_id": "a842ad7c-a6c7-496c-8fff-cb859da0771f",
+  "file_type": "pdf",
+  "document_type": "bank_statement",
+  "classification_confidence": 0.93,
+  "extraction_method": "pdfplumber",
+  "total_documents": 1,
+  "documents": [
+    {
+      "document_number": 1,
+      "document_type": "bank_statement",
+      "extracted_data": {
+        "account_number": "4770174117",
+        "account_holder_name": "MOHAMAD SUHAIMI BIN A RAHMAN",
+        "statement_date": "20 May 2025",
+        "opening_balance": "48.20",
+        "closing_balance": "20.53",
+        "total_debit": "40000.00",
+        "total_credit": "40000.00",
+        "statement_period_from": null,
+        "statement_period_to": null,
+        "detected_bank": "public_islamic",
+        "bank_detection_confidence": 1.0
+      },
+      "confidence_score": 0.82,
+      "text_length": 17279
+    }
+  ],
+  "summary": {
+    "bank_statements": 1,
+    "other": 0,
+    "average_confidence": 0.82
+  },
+  "processing_completed_at": "2026-04-16T15:53:29.351546",
+  "original_file": "raw/a842ad7c-a6c7-496c-8fff-cb859da0771f.pdf",
+  "total_text_length": 17279
+}

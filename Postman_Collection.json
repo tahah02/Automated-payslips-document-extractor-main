@@ -1,0 +1,342 @@
+{
+	"info": {
+		"_postman_id": "unified-doc-extractor-2026",
+		"name": "Unified Document Extractor API",
+		"description": "API collection for unified document extraction system that automatically detects and extracts bank statements and payslips",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Upload Document (Auto-Detect)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Save upload_id for next requests",
+							"if (pm.response.code === 200) {",
+							"    var jsonData = pm.response.json();",
+							"    pm.environment.set(\"upload_id\", jsonData.upload_id);",
+							"    console.log(\"Upload ID saved: \" + jsonData.upload_id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": [],
+							"description": "Select a PDF file (bank statement or payslip)"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{base_url}}/api/upload",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"upload"
+					]
+				},
+				"description": "Upload a PDF document. The system will automatically detect if it's a bank statement or payslip and extract accordingly."
+			},
+			"response": [
+				{
+					"name": "Success Response",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/upload",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"upload"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [],
+					"cookie": [],
+					"body": "{\n    \"status\": \"processing\",\n    \"upload_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"message\": \"File uploaded successfully. Auto-detecting document type and processing...\"\n}"
+				}
+			]
+		},
+		{
+			"name": "2. Check Processing Status",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/status/{{upload_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"status",
+						"{{upload_id}}"
+					]
+				},
+				"description": "Check the processing status of an uploaded document. Returns document type after classification."
+			},
+			"response": [
+				{
+					"name": "Processing",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/status/{{upload_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"status",
+								"{{upload_id}}"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [],
+					"cookie": [],
+					"body": "{\n    \"status\": \"processing\",\n    \"upload_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"message\": \"Analyzing document and detecting type...\",\n    \"document_type\": null,\n    \"classification_confidence\": null\n}"
+				},
+				{
+					"name": "Completed",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/status/{{upload_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"status",
+								"{{upload_id}}"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [],
+					"cookie": [],
+					"body": "{\n    \"status\": \"completed\",\n    \"upload_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"message\": \"Processing completed. Document type: bank_statement\",\n    \"document_type\": \"bank_statement\",\n    \"classification_confidence\": 0.92\n}"
+				}
+			]
+		},
+		{
+			"name": "3. Get Extraction Results",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/result/{{upload_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"result",
+						"{{upload_id}}"
+					]
+				},
+				"description": "Get the extracted data from the processed document. Returns structured data based on document type."
+			},
+			"response": [
+				{
+					"name": "Bank Statement Result",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/result/{{upload_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"result",
+								"{{upload_id}}"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [],
+					"cookie": [],
+					"body": "{\n    \"upload_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"file_type\": \"pdf\",\n    \"document_type\": \"bank_statement\",\n    \"classification_confidence\": 0.92,\n    \"extraction_method\": \"pdfplumber\",\n    \"total_documents\": 1,\n    \"documents\": [\n        {\n            \"document_number\": 1,\n            \"document_type\": \"bank_statement\",\n            \"extracted_data\": {\n                \"account_holder_name\": \"JOHN DOE\",\n                \"account_number\": \"1234567890\",\n                \"statement_date\": \"15/04/2026\",\n                \"opening_balance\": \"5000.00\",\n                \"closing_balance\": \"4500.00\",\n                \"total_debit\": \"1000.00\",\n                \"total_credit\": \"500.00\",\n                \"statement_period_from\": \"01/04/2026\",\n                \"statement_period_to\": \"15/04/2026\",\n                \"detected_bank\": \"cimb\",\n                \"bank_detection_confidence\": 0.95\n            },\n            \"confidence_score\": 0.95,\n            \"text_length\": 2500\n        }\n    ],\n    \"summary\": {\n        \"bank_statements\": 1,\n        \"other\": 0,\n        \"average_confidence\": 0.95\n    },\n    \"processing_completed_at\": \"2026-04-16T15:30:00\",\n    \"original_file\": \"raw/550e8400-e29b-41d4-a716-446655440000.pdf\",\n    \"total_text_length\": 2500\n}"
+				},
+				{
+					"name": "Payslip Result",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/result/{{upload_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"result",
+								"{{upload_id}}"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [],
+					"cookie": [],
+					"body": "{\n    \"upload_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"file_type\": \"pdf\",\n    \"document_type\": \"payslip\",\n    \"classification_confidence\": 0.88,\n    \"extraction_method\": \"paddleocr\",\n    \"total_documents\": 1,\n    \"documents\": [\n        {\n            \"document_number\": 1,\n            \"document_type\": \"payslip\",\n            \"extracted_data\": {\n                \"name\": \"John Doe\",\n                \"id_number\": \"123456-12-1234\",\n                \"gross_income\": \"5000.00\",\n                \"net_income\": \"4000.00\",\n                \"total_deduction\": \"1000.00\",\n                \"month_year\": \"04/2026\"\n            },\n            \"confidence_score\": 0.90,\n            \"text_length\": 1500\n        }\n    ],\n    \"summary\": {\n        \"payslips\": 1,\n        \"other\": 0,\n        \"average_confidence\": 0.90\n    },\n    \"processing_completed_at\": \"2026-04-16T15:30:00\",\n    \"original_file\": \"raw/550e8400-e29b-41d4-a716-446655440000.pdf\",\n    \"total_text_length\": 1500\n}"
+				}
+			]
+		},
+		{
+			"name": "4. Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/health",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"health"
+					]
+				},
+				"description": "Check if the API is running and healthy."
+			},
+			"response": [
+				{
+					"name": "Healthy",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"health"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [],
+					"cookie": [],
+					"body": "{\n    \"status\": \"healthy\",\n    \"version\": \"1.0.0\",\n    \"service\": \"unified-document-extractor\"\n}"
+				}
+			]
+		},
+		{
+			"name": "5. API Info",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						""
+					]
+				},
+				"description": "Get API information and available endpoints."
+			},
+			"response": [
+				{
+					"name": "API Info",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								""
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [],
+					"cookie": [],
+					"body": "{\n    \"name\": \"Unified Document Extraction System\",\n    \"version\": \"1.0.0\",\n    \"status\": \"running\",\n    \"description\": \"Unified document extraction API - automatically detects and extracts bank statements and payslips\",\n    \"endpoints\": {\n        \"upload\": \"/api/upload\",\n        \"status\": \"/api/status/{upload_id}\",\n        \"result\": \"/api/result/{upload_id}\",\n        \"docs\": \"/docs\"\n    }\n}"
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		},
+		{
+			"key": "upload_id",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

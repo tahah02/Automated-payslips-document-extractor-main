@@ -1,0 +1,23 @@
+# FastAPI & Server
+fastapi==0.125.0
+uvicorn[standard]==0.40.0
+pydantic==2.12.5
+python-multipart==0.0.21
+python-dotenv==1.0.0
+pyyaml==6.0.2
+aiofiles==25.1.0
+
+# OCR Engines
+paddleocr==3.4.0
+easyocr==1.7.2
+pytesseract==0.3.13
+
+# PDF & Image Processing
+pymupdf==1.27.2.2
+pdfplumber==0.11.9
+numpy==2.4.4
+opencv-python==4.13.0.92
+Pillow==12.0.0
+
+# Utilities
+requests==2.32.5

@@ -1,0 +1,123 @@
+{
+  "extraction": {
+    "fields": {
+      "name": {
+        "keywords": ["nama", "nama pekerja", "name", "employee name"],
+        "pattern": "([A-Z][A-Z\\s]+(?:BIN|BINTI)\\s+[A-Z][A-Z\\s]+)",
+        "required": true,
+        "fallback_patterns": [
+          "(?:Nama|NAMA|Name)\\s*[:\\-]?\\s*([A-Z][A-Z\\s]+(?:BIN|BINTI|Bin|Binti)\\s+[A-Z][A-Z\\s]+)",
+          "(?:Nama|NAMA|Name)\\s*[:\\-]?\\s*([A-Z][a-z]+(?:\\s+(?:bin|binti|Bin|Binti)\\s+)?[A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
+          "^([A-Z][a-z]+(?:\\s+[A-Z][a-z]+){1,5})(?=\\s+(?:No|Kump|bin|binti))",
+          "^([A-Z][a-z]+(?:\\s+(?:bin|binti)\\s+[A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*))(?=\\s+No)"
+        ],
+        "exclusion_keywords": ["syarikat", "company", "sdn", "bhd", "bank", "penyata", "bulanan"]
+      },
+      "id_number": {
+        "keywords": ["no. k/p", "no kp", "no k/p", "no ic", "nric"],
+        "pattern": "\\d{6}-?\\d{2}-?\\d{4}",
+        "required": true,
+        "fallback_patterns": [
+          "(?:no\\.?\\s*k/?p|no\\.?\\s*kp|no\\.?\\s*ic)\\s*[:\\-]?\\s*(\\d{6}-?\\d{2}-?\\d{4})",
+          "(?:no\\.?\\s*k/?p|no\\.?\\s*kp|no\\.?\\s*ic)\\s*[:\\-]?\\s*(\\d{12})",
+          "(?<!\\d)(\\d{6}-\\d{2}-\\d{4})(?!\\d)",
+          "(?<!\\d)(\\d{12})(?!\\d)"
+        ],
+        "exclusion_keywords": ["amaun", "rm", "jumlah", "total", "amount", "gaji", "no gaji", "no siri"]
+      },
+      "gross_income": {
+        "keywords": ["jumlah pendapatan", "junlah pendapatan", "gross income", "total income", "pendapatan kasar"],
+        "pattern": "[\\d,]+\\.\\d{2}",
+        "required": true,
+        "fallback_patterns": [
+          "(?:Jumlah|Junlah)\\s+Pendapatan\\s+([\\d\\s,]+[\\.-]\\s*\\d{2})",
+          "(?:jumlah|junlah)\\s+pendapatan\\s+([\\d\\s,]+[\\.-]\\s*\\d{2})",
+          "(?:Surlah|Sumlah)\\s+Pepdapatan\\s+([\\d\\s,]+[\\.-]\\s*\\d{2})",
+          "(?:Pendapatan|PENDAPATAN)\\s+(?:Kasar|KASAR)\\s+([\\d\\s,]+[\\.-]\\s*\\d{2})",
+          "(?:Gross|GROSS)\\s+(?:Income|INCOME)\\s+([\\d\\s,]+[\\.-]\\s*\\d{2})"
+        ],
+        "exclusion_keywords": ["bersih", "potongan", "deduction", "pcrorgan", "net"]
+      },
+      "net_income": {
+        "keywords": ["gaji bersih", "gaj: bersil", "gaji bersin", "net income", "net salary"],
+        "pattern": "[\\d,]+\\.\\d{2}",
+        "required": true,
+        "fallback_patterns": [
+          "Gaji[:\\s]+Bersih\\s+([\\d\\s,]+[\\.-]\\s*\\d{2})",
+          "Gaj:[:\\s]+Bersil\\s+([\\d\\s,]+[\\.-]\\s*\\d{2})",
+          "(?:gaji|gaj:)\\s+(?:bersih|bersil|bersin)\\s+([\\d\\s,]+[\\.-]\\s*\\d{2})",
+          "Net\\s+(?:Income|Salary)\\s+([\\d\\s,]+[\\.-]\\s*\\d{2})"
+        ],
+        "exclusion_keywords": ["gross", "jumlah pendapatan", "potongan", "junlah"]
+      },
+      "total_deduction": {
+        "keywords": ["jumlah potongan", "junlah potongan", "sulab pcrorgan", "total deduction"],
+        "pattern": "[\\d,]+\\.\\d{2}",
+        "required": true,
+        "fallback_patterns": [
+          "(?:Jumlah|Junlah|Sulab)\\s+(?:Potongan|Pcrorgan)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
+          "(?:jumlah|junlah|sulab)\\s+(?:potongan|pcrorgan)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
+          "Total\\s+Deduction\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})"
+        ],
+        "deduction_item_patterns": [
+          "(?:KWSP|EPF)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
+          "(?:Perkeso|SOCSO)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
+          "(?:Cukai|Cuxai|Tax)\\s+(?:Pedapatan|Pendapatan|Pepdapacar)?\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
+          "(?:Takaful|Insurance)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
+          "(?:PIIN|Perumahan)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})"
+        ],
+        "exclusion_keywords": ["gross", "jumlah pendapatan", "bersih", "junlah", "gaji"]
+      },
+      "month_year": {
+        "keywords": ["m/s", "bulan", "month"],
+        "pattern": "\\d{1,2}/\\d{1,4}",
+        "required": true,
+        "fallback_patterns": [
+          "M/S\\s*[:\\-]?\\s*(\\d{1,2})/(\\d{1,2})",
+          "\\d{1,2}/\\d{1,2}"
+        ]
+      }
+    },
+    "validation": {
+      "min_confidence": 0.5,
+      "required_fields": ["name", "id_number", "gross_income", "net_income", "total_deduction", "month_year"],
+      "field_validation": {
+        "id_number": {
+          "type": "regex",
+          "pattern": "\\d{6}-\\d{2}-\\d{4}|\\d{12}"
+        },
+        "gross_income": {
+          "type": "numeric",
+          "min": 0,
+          "max": 999999.99
+        },
+        "net_income": {
+          "type": "numeric",
+          "min": 0,
+          "max": 999999.99
+        },
+        "total_deduction": {
+          "type": "numeric",
+          "min": 0,
+          "max": 999999.99
+        },
+        "month_year": {
+          "type": "regex",
+          "pattern": "\\d{2}/\\d{4}"
+        }
+      },
+      "math_validation": {
+        "enabled": true,
+        "tolerance": 1.0,
+        "rule": "gross_income >= net_income + total_deduction"
+      }
+    },
+    "processing": {
+      "calculate_net_income": true,
+      "calculate_total_deduction": true,
+      "min_deduction_items": 2,
+      "currency_format": "RM",
+      "decimal_places": 2
+    }
+  }
+}

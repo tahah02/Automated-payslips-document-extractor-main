@@ -1,0 +1,52 @@
+app:
+  name: "Document Extraction System"
+  version: "0.1.0"
+  debug: false
+
+server:
+  host: "0.0.0.0"
+  port: 8003
+  workers: 4
+
+cors:
+  origins:
+    - "*"
+  allow_credentials: true
+  allow_methods:
+    - "*"
+  allow_headers:
+    - "*"
+
+file_upload:
+  max_size_mb: 50
+  allowed_extensions:
+    - pdf
+    - jpg
+    - jpeg
+    - png
+    - docx
+    - doc
+  upload_dir: "uploads"
+  temp_dir: "temp"
+
+ocr:
+  engine: "paddleocr"
+  language: "en"
+  confidence_threshold: 0.5
+  use_gpu: false
+
+extraction:
+  min_confidence_score: 0.95
+  config_file: "config/extraction_config.json"
+
+output:
+  output_dir: "output"
+  json_dir: "output/json"
+  logs_dir: "output/logs"
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "output/logs/app.log"
+  max_bytes: 10485760
+  backup_count: 5

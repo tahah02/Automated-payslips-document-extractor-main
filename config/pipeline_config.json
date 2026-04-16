@@ -1,0 +1,188 @@
+{
+  "config_version": "2.0.0",
+  "schema_version": "2.0.0",
+  "last_updated": "2026-04-10",
+  
+  "layout": {
+    "same_line_tolerance": 5,
+    "vertical_tolerance": 50,
+    "horizontal_neighbor_distance": 100,
+    "token_merge_distance": 10,
+    "enable_token_consumption": true,
+    "use_relative_tolerance": false,
+    "merge_only_numeric": true,
+    "default_page_height": 1000,
+    
+    "table": {
+      "min_columns": 2,
+      "max_columns": 10,
+      "column_detection_method": "histogram",
+      "x_tolerance": 20,
+      "row_tolerance": 5
+    }
+  },
+  
+  "scoring": {
+    "weights": {
+      "ocr_confidence": 0.3,
+      "regex_match": 0.3,
+      "proximity": 0.25,
+      "spatial_relationship": 0.15
+    },
+    "min_confidence_threshold": 0.5
+  },
+  
+  "features": {
+    "use_async": false,
+    "enable_debug_endpoints": true,
+    "enable_telemetry": true,
+    "enable_file_watch": false,
+    "strict_validation": true,
+    "require_auth_for_reload": true
+  },
+  
+  "classification": {
+    "threshold": 0.5,
+    "min_keyword_matches": 1,
+    "unknown_confidence": 0.5,
+    "bank_statement_keywords": [
+      "bank statement", "account", "balance", "transaction",
+      "deposit", "withdrawal", "statement date", "account number",
+      "opening balance", "closing balance", "statement period",
+      "bank name", "account holder", "date", "amount",
+      "reference", "description", "debit", "credit",
+      "statement of account", "account summary",
+      "penyata", "akaun", "baki", "transaksi", "tarikh",
+      "pengeluaran", "deposit", "pembukaan", "penutup",
+      "pemegang", "rujukan", "deskripsi", "jumlah",
+      "كشف", "حساب", "رصيد", "معاملة", "تاريخ",
+      "إيداع", "سحب", "الافتتاحي", "الختامي", "صاحب"
+    ]
+  },
+  
+  "confidence": {
+    "weights": {
+      "ocr": 0.45,
+      "regex": 0.30,
+      "proximity": 0.20,
+      "source": 0.05
+    },
+    "min_score": 0.95,
+    "default_ocr_confidence": 0.6,
+    "pdf_source_bonus": 0.15
+  },
+  
+  "pdf_mode_detection": {
+    "min_words_per_page": 30,
+    "min_chars_per_page": 200,
+    "text_density_threshold": 0.1
+  },
+  
+  "proximity": {
+    "max_distance": 50,
+    "same_line_tolerance": 5,
+    "vertical_tolerance": 10,
+    "horizontal_neighbor_distance": 100
+  },
+  
+  "table_extraction": {
+    "vertical_strategy": "lines",
+    "horizontal_strategy": "lines",
+    "snap_tolerance": 3,
+    "snap_x_tolerance": 3,
+    "snap_y_tolerance": 3,
+    "join_tolerance": 3,
+    "join_x_tolerance": 3,
+    "join_y_tolerance": 3,
+    "edge_min_length": 3,
+    "min_words_vertical": 3,
+    "min_words_horizontal": 1,
+    "keep_blank_chars": false,
+    "text_tolerance": 3,
+    "text_x_tolerance": 3,
+    "text_y_tolerance": 3,
+    "intersection_tolerance": 3,
+    "intersection_x_tolerance": 3,
+    "intersection_y_tolerance": 3,
+    "cluster_tolerance": 5
+  },
+  
+  "validation": {
+    "id_number_pattern": "^\\d{6}-\\d{2}-\\d{4}$",
+    "currency_pattern": "^\\d+\\.\\d{2}$",
+    "account_number_pattern": "^\\d{2}-\\d{7}-\\d$",
+    "month_year_pattern": "^\\d{2}/\\d{4}$",
+    "date_pattern": "^\\d{2}/\\d{2}/\\d{4}$",
+    "iban_min_length": 15,
+    "iban_max_length": 34,
+    "date_range": {
+      "min_year": 1900,
+      "max_year": 2100,
+      "min_day": 1,
+      "max_day": 31,
+      "min_month": 1,
+      "max_month": 12
+    }
+  },
+  
+  "text_constraints": {
+    "min_name_length": 5,
+    "max_name_length": 100,
+    "min_line_length": 3,
+    "min_word_length": 1
+  },
+  
+  "extraction": {
+    "bank_statement": {
+      "account_holder_name": {
+        "min_length": 5,
+        "max_length": 100,
+        "exclusion_patterns": [
+          "CIMB", "Statement", "Account", "Number", "Date", "Balance",
+          "Period", "Page", "Halaman", "Summary", "Ringkasan", "JALAN",
+          "KUALA", "LUMPUR", "RM", "Tarikh", "Penyata", "Akaun",
+          "Simpanan", "Transaksi", "Butir", "Withdrawal", "Deposit",
+          "GST", "Baki", "Pengeluaran", "Rujukan", "Diskripsi",
+          "Savings", "Eligible", "PIDM", "Bonus", "Points", "Mata",
+          "Ganjaran", "Opening", "Closing", "Interest", "Fee",
+          "Transfer", "ATM", "Debit", "Credit"
+        ],
+        "fallback_patterns": [
+          "(\\d{2}/\\d{2}/\\d{4})\\s+([A-Za-z\\s]+?)\\s+(\\d+,?\\s*JALAN|Summary|Ringkasan)"
+        ]
+      },
+      "opening_balance": {
+        "fallback_patterns": [
+          "OPENING\\s+BALANCE\\s+([\\d,.\\s]+?)(?:\\n|$|\\d{2}/\\d{2}/\\d{4})"
+        ]
+      },
+      "closing_balance": {
+        "fallback_patterns": [
+          "(?:CLOSING\\s+BALANCE|BAKI\\s+PENUTUP)\\s+([\\d,.\\s]+?)(?:\\n|$|End\\s+of)"
+        ]
+      }
+    }
+  },
+  
+  "api": {
+    "max_upload_mb": 50,
+    "request_timeout_seconds": 300,
+    "allowed_content_types": ["application/pdf", "image/jpeg", "image/png"]
+  },
+  
+  "templates": {
+    "default": {},
+    "government_payslip": {
+      "layout": {
+        "same_line_tolerance": 5
+      }
+    },
+    "bank_statement": {
+      "layout": {
+        "table": {
+          "min_columns": 4
+        }
+      }
+    }
+  }
+}

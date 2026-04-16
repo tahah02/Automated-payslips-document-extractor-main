@@ -1,0 +1,62 @@
+{
+  "ocr": {
+    "default_engine": "easyocr",
+    "engines": {
+      "tesseract": {
+        "enabled": true,
+        "language": "msa",
+        "languages": {
+          "english": "eng",
+          "malay": "msa",
+          "chinese": "chi_sim",
+          "arabic": "ara",
+          "hindi": "hin"
+        },
+        "config": {
+          "psm": 6,
+          "oem": 3
+        }
+      },
+      "easyocr": {
+        "enabled": false,
+        "language": "ms",
+        "languages": {
+          "english": "en",
+          "malay": "ms",
+          "chinese": "ch",
+          "multi": ["en", "ms"]
+        },
+        "config": {
+          "gpu": false,
+          "model_storage_directory": null
+        }
+      },
+      "paddleocr": {
+        "enabled": false,
+        "language": "ms",
+        "languages": {
+          "english": "en",
+          "malay": "ms",
+          "chinese": "ch",
+          "multi": ["en", "ms"]
+        },
+        "config": {
+          "use_angle_cls": false,
+          "device": "cpu"
+        }
+      }
+    },
+    "preprocessing": {
+      "dpi": 300,
+      "contrast_enhancement": true,
+      "noise_reduction": true,
+      "skew_correction": true,
+      "image_format": "png"
+    },
+    "performance": {
+      "timeout_seconds": 30,
+      "max_pages": 10,
+      "cache_models": true
+    }
+  }
+}
