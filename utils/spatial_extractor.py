@@ -25,41 +25,62 @@ class SpatialExtractor:
                 logger.warning(f"Unknown page type: {type(page)}")
                 return None
             
-            # For "No KP" - extract the 12-digit number after it
-            if label_text.lower() in ['no kp', 'no. k/p', 'no ic']:
-                pattern = rf'{re.escape(label_text)}\s*:?\s*(\d{{12}}|\d{{6}}-\d{{2}}-\d{{4}})'
-                match = re.search(pattern, text, re.IGNORECASE)
-                if match:
-                    value = match.group(1).strip()
-                    logger.debug(f"Extracted {label_text}: {value}")
-                    return value
+            # For "No KP" - extract the 12-digit number after it (with or without dashes)
+            if label_text.lower() in ['no kp', 'no. k/p', 'no ic', 'no. kad']:
+                # Try multiple patterns
+                patterns = [
+                    rf'No\s+KP\s*:?\s*(\d{{12}})',  # No KP : 610614045225
+                    rf'No\s+KP\s*:?\s*(\d{{6}}-\d{{2}}-\d{{4}})',  # No KP : 610614-04-5225
+                    rf'No\.?\s*K/?P\s*:?\s*(\d{{12}})',  # No. K/P : 610614045225
+                    rf'No\.?\s*K/?P\s*:?\s*(\d{{6}}-\d{{2}}-\d{{4}})',  # No. K/P : 610614-04-5225
+                    rf'No\.\s+Kad\s*:?\s*(\d{{12}})',  # No. Kad : 750203125544
+                    rf'No\.\s+Kad\s*:?\s*(\d{{6}}-\d{{2}}-\d{{4}})',  # No. Kad : 750203-12-5544
+                ]
+                for pattern in patterns:
+                    match = re.search(pattern, text, re.IGNORECASE)
+                    if match:
+                        value = match.group(1).strip()
+                        logger.debug(f"Extracted {label_text}: {value}")
+                        return value
             
-            # For "Jumlah Pendapatan" - extract the amount after the colon
+            # For "Jumlah Pendapatan" - extract the amount (with commas)
             elif 'jumlah pendapatan' in label_text.lower():
-                pattern = r'Jumlah\s+Pendapatan\s*:\s*([\d,]+\.[\d]{2})'
-                match = re.search(pattern, text, re.IGNORECASE)
-                if match:
-                    value = match.group(1).strip()
-                    logger.debug(f"Extracted {label_text}: {value}")
-                    return value
+                patterns = [
+                    r'Jumlah\s+Pendapatan\s+([\d,]+\.[\d]{2})',  # Without colon
+                    r'Jumlah\s+Pendapatan\s*:\s*([\d,]+\.[\d]{2})',  # With colon
+                ]
+                for pattern in patterns:
+                    match = re.search(pattern, text, re.IGNORECASE)
+                    if match:
+                        value = match.group(1).strip()
+                        logger.debug(f"Extracted {label_text}: {value}")
+                        return value
             
-            # For "Jumlah Potongan" - extract the amount after the colon
+            # For "Jumlah Potongan" - extract the amount (with commas)
             elif 'jumlah potongan' in label_text.lower():
-                pattern = r'Jumlah\s+Potongan\s*:\s*([\d,]+\.[\d]{2})'
-                match = re.search(pattern, text, re.IGNORECASE)
-                if match:
-                    value = match.group(1).strip()
-                    logger.debug(f"Extracted {label_text}: {value}")
-                    return value
+                patterns = [
+                    r'Jumlah\s+Potongan\s+([\d,]+\.[\d]{2})',  # Without colon
+                    r'Jumlah\s+Potongan\s*:\s*([\d,]+\.[\d]{2})',  # With colon
+                ]
+                for pattern in patterns:
+                    match = re.search(pattern, text, re.IGNORECASE)
+                    if match:
+                        value = match.group(1).strip()
+                        logger.debug(f"Extracted {label_text}: {value}")
+                        return value
             
-            # For "Gaji Bersih" - extract the amount after the colon
+            # For "Gaji Bersih" - extract the amount (with commas)
             elif 'gaji bersih' in label_text.lower():
-                pattern = r'Gaji\s+Bersih\s*:\s*([\d,]+\.[\d]{2})'
-                match = re.search(pattern, text, re.IGNORECASE)
-                if match:
-                    value = match.group(1).strip()
-                    logger.debug(f"Extracted {label_text}: {value}")
-                    return value
+                patterns = [
+                    r'Gaji\s+Bersih\s+([\d,]+\.[\d]{2})',  # Without colon
+                    r'Gaji\s+Bersih\s*:\s*([\d,]+\.[\d]{2})',  # With colon
+                ]
+                for pattern in patterns:
+                    match = re.search(pattern, text, re.IGNORECASE)
+                    if match:
+                        value = match.group(1).strip()
+                        logger.debug(f"Extracted {label_text}: {value}")
+                        return value
             
             # Generic pattern for other fields
             else:
@@ -137,19 +158,23 @@ class SpatialExtractor:
                 logger.warning(f"Unknown page type: {type(page)}")
                 return None
             
-            # Specific pattern for "Nama : NAME Bulan" format
+            # Specific pattern for "Nama : NAME" format (handles both uppercase and mixed case)
+            # Use lookahead to stop before common keywords that follow the name
             name_patterns = [
-                r'Nama\s*:\s*([A-Z][A-Z\s]+(?:BIN|BINTI)\s+[A-Z][A-Z\s]+?)\s+Bulan',
-                r'Nama\s*:\s*([A-Z][a-z]+(?:\s+(?:bin|binti|Bin|Binti)\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)?)\s+Bulan',
-                r'Nama\s*:\s*([A-Z][A-Z\s]+(?:BIN|BINTI)\s+[A-Z][A-Z\s]+)',
+                r'Nama\s*:\s*([A-Z][A-Z\s]+(?:BIN|BINTI)\s+[A-Z][A-Z\s]+?)(?=\s+(?:Bulan|Jawatan|No\s+Gaji|No\.|Pusat|Pejabat)|\n)',
+                r'Nama\s*:\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\s+(?:bin|binti|Bin|Binti)\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)(?=\s+(?:Bulan|Jawatan|No\s+Gaji|No\.|Pusat|Pejabat)|\n)',
+                r'Nama\s*:\s*([A-Z][A-Z\s]+?)(?=\s+(?:Bulan|Jawatan|No\s+Gaji|No\.|Pusat|Pejabat)|\n)',
             ]
             
             for pattern in name_patterns:
                 match = re.search(pattern, text, re.IGNORECASE)
                 if match:
                     name = match.group(1).strip()
-                    # Validate name - should not contain these words
-                    if name and len(name) > 3 and not any(word in name.upper() for word in ["PENYATA", "GAJI", "BULANAN", "NAMA"]):
+                    # Clean up - remove extra spaces and newlines
+                    name = ' '.join(name.split())
+                    # Validate name - should not contain these words and should be reasonable length
+                    if (name and 5 <= len(name) <= 100 and 
+                        not any(word in name.upper() for word in ["PENYATA", "GAJI", "BULANAN", "NAMA", "NO GAJI", "NO SIRI"])):
                         logger.debug(f"Extracted name: {name}")
                         return name
             

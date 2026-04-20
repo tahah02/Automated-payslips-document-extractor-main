@@ -75,11 +75,6 @@ class UnifiedExtractionPipeline:
     def _process_with_pdfplumber(self, upload_id: str, file_path: str) -> Dict[str, Any]:
         """Process digital PDF using PDFPlumber."""
         try:
-            import fitz  # PyMuPDF for page object
-            
-            # Open PDF with PyMuPDF for page objects
-            pdf_doc = fitz.open(file_path)
-            
             # Extract text and tokens
             full_text, tokens = self.pdfplumber_engine.extract_text_from_pdf(file_path)
             full_text = self.text_cleaner.clean_text(full_text)
@@ -90,24 +85,22 @@ class UnifiedExtractionPipeline:
             doc_type, classification_confidence = self.classifier.classify(full_text)
             logger.info(f"Document classified as: {doc_type} (confidence: {classification_confidence})")
             
-            # Get first page object for spatial extraction
-            page = pdf_doc[0] if len(pdf_doc) > 0 else None
-            
             # Step 3: Route to appropriate extractor
-            if doc_type == "bank_statement":
+            if doc_type == "payslip":
+                # Open with PDFPlumber to get page object for spatial extraction
+                import pdfplumber
+                with pdfplumber.open(file_path) as pdf:
+                    page = pdf.pages[0] if len(pdf.pages) > 0 else None
+                    # Extract with spatial extraction
+                    extracted_data = self.payslip_extractor.extract_payslip_fields(full_text, tokens=tokens, page=page)
+                    confidence = self.payslip_extractor.calculate_confidence(extracted_data)
+            elif doc_type == "bank_statement":
                 extracted_data = self.bank_extractor.extract_bank_statement_fields(full_text, tokens)
                 confidence = self.bank_extractor.calculate_confidence(extracted_data)
-            elif doc_type == "payslip":
-                # Pass page object for spatial extraction
-                extracted_data = self.payslip_extractor.extract_payslip_fields(full_text, tokens=tokens, page=page)
-                confidence = self.payslip_extractor.calculate_confidence(extracted_data)
             else:
                 raise ValueError(f"Unknown document type: {doc_type}")
             
             logger.info(f"Extraction confidence: {confidence}")
-            
-            # Close PDF
-            pdf_doc.close()
             
             # Step 4: Build result
             result = {

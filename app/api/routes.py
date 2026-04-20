@@ -6,6 +6,7 @@ import json
 
 from app.api.schemas import UploadResponse, StatusResponse, ExtractionResult, ErrorResponse
 from core.unified_pipeline import UnifiedExtractionPipeline
+from utils.config_loader import ConfigLoader
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["unified-extractor"])
@@ -13,8 +14,15 @@ router = APIRouter(prefix="/api", tags=["unified-extractor"])
 # Global state for tracking processing status
 processing_status = {}
 
-# Initialize unified pipeline
-pipeline = UnifiedExtractionPipeline(ocr_engine="paddleocr", ocr_language="en")
+# Load OCR settings from ocr_config.json
+ocr_config = ConfigLoader.load_config("ocr_config")
+ocr_engine = ocr_config.get("engine", "paddleocr")
+ocr_language = ocr_config.get("language", "en")
+
+logger.info(f"Initializing pipeline with OCR engine: {ocr_engine}, language: {ocr_language}")
+
+# Initialize unified pipeline with config from ocr_config.json
+pipeline = UnifiedExtractionPipeline(ocr_engine=ocr_engine, ocr_language=ocr_language)
 
 # Setup directories
 UPLOAD_DIR = Path("uploads/raw")

@@ -107,12 +107,40 @@ class PayslipExtractor:
             try:
                 gross = float(extracted["gross_income"])
                 deduction = float(extracted["total_deduction"])
-                calculated_net = gross - deduction
-                extracted["net_income"] = f"{calculated_net:.2f}"
-                logger.info(f"Calculated net_income: {extracted['net_income']}")
+                if gross > 0 and deduction >= 0:
+                    calculated_net = gross - deduction
+                    extracted["net_income"] = f"{calculated_net:.2f}"
+                    logger.info(f"Calculated net_income: {extracted['net_income']}")
             except (ValueError, TypeError) as e:
                 logger.warning(f"Could not calculate net_income: {str(e)}")
                 extracted["net_income"] = net_income_cleaned
+        
+        # FIX: Validate and recalculate if math doesn't match
+        try:
+            gross = float(extracted["gross_income"])
+            net = float(extracted["net_income"])
+            deduction = float(extracted["total_deduction"])
+            
+            # If gross is 0 but net and deduction exist, something is wrong
+            if gross == 0 and net > 0:
+                logger.warning(f"Gross is 0 but net is {net} - extraction may have failed")
+                # Don't try to calculate deduction from 0 gross
+            # If deduction is negative, it's definitely wrong
+            elif deduction < 0:
+                logger.warning(f"Deduction is negative ({deduction}) - recalculating")
+                if gross > 0 and net > 0:
+                    calculated_deduction = gross - net
+                    if calculated_deduction >= 0:
+                        extracted["total_deduction"] = f"{calculated_deduction:.2f}"
+                        logger.info(f"Fixed deduction: {gross} - {net} = {calculated_deduction}")
+            # If math doesn't match (tolerance 1.0), recalculate deduction
+            elif gross > 0 and net > 0 and abs((gross - deduction) - net) > 1.0:
+                calculated_deduction = gross - net
+                logger.info(f"Math mismatch - recalculating deduction: {gross} - {net} = {calculated_deduction} (was {deduction})")
+                extracted["total_deduction"] = f"{calculated_deduction:.2f}"
+        except (ValueError, TypeError) as e:
+            logger.warning(f"Could not validate math: {str(e)}")
+            pass
         
         # Log what was extracted
         logger.info(f"Spatial extraction results: name={bool(extracted['name'])}, id={bool(extracted['id_number'])}, gross={extracted['gross_income']}, deduction={extracted['total_deduction']}, net={extracted['net_income']}")
@@ -235,6 +263,20 @@ class PayslipExtractor:
         fallback_patterns = field_config.get("fallback_patterns", [])
         exclusion_keywords = field_config.get("exclusion_keywords", [])
         
+        # Special handling for month_year - try to extract month name formats first
+        if field_name == "month_year":
+            month_patterns = [
+                r'Bulan\s+Gaji\s*:?\s*(JANUARI|FEBRUARI|MAC|APRIL|MEI|JUN|JULAI|OGOS|SEPTEMBER|OKTOBER|NOVEMBER|DISEMBER|January|February|March|April|May|June|July|August|September|October|November|December)\s+(20\d{2})',
+                r'Bulan\s*:?\s*(JANUARI|FEBRUARI|MAC|APRIL|MEI|JUN|JULAI|OGOS|SEPTEMBER|OKTOBER|NOVEMBER|DISEMBER|January|February|March|April|May|June|July|August|September|October|November|December)\s+(20\d{2})',
+            ]
+            for pattern in month_patterns:
+                match = re.search(pattern, text, re.IGNORECASE)
+                if match:
+                    month_name = match.group(1)
+                    year = match.group(2)
+                    result = f"{month_name} {year}"
+                    return self._format_month_year(result, text)
+        
         for keyword in keywords:
             if pattern:
                 match = re.search(rf'{keyword}[:\s]*({pattern})', text, re.IGNORECASE)
@@ -278,6 +320,9 @@ class PayslipExtractor:
             for match in matches:
                 try:
                     result = match.group(1).strip()
+                    # For month_year with 2 groups (month name + year)
+                    if field_name == "month_year" and match.lastindex == 2:
+                        result = f"{match.group(1)} {match.group(2)}"
                 except IndexError:
                     result = match.group(0).strip()
                 
@@ -386,7 +431,7 @@ class PayslipExtractor:
                 month = potential_month.zfill(2) if int(potential_month) <= 12 else potential_day.zfill(2)
                 return f"{month}/2025"
         
-        # If month name format
+        # If month name format (JANUARI 2025, January 2025, etc.)
         month_names = {
             'januari': '01', 'februari': '02', 'mac': '03', 'april': '04',
             'mei': '05', 'jun': '06', 'julai': '07', 'ogos': '08',
@@ -398,11 +443,19 @@ class PayslipExtractor:
             'okt': '10', 'oct': '10', 'nov': '11', 'des': '12', 'dec': '12'
         }
         
+        # Try to extract month name and year from value or full text
         for month_name, month_num in month_names.items():
             if month_name in value.lower():
+                # Look for year in the value first
                 year_match = re.search(r'(20\d{2})', value)
                 if year_match:
                     return f"{month_num}/{year_match.group(1)}"
+                # If not in value, look in full text
+                year_match = re.search(r'\b(20\d{2})\b', full_text)
+                if year_match:
+                    return f"{month_num}/{year_match.group(1)}"
+                # Default to current year
+                return f"{month_num}/2025"
         
         return value
     

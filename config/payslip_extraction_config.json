@@ -6,6 +6,7 @@
         "pattern": "([A-Z][A-Z\\s]+(?:BIN|BINTI)\\s+[A-Z][A-Z\\s]+)",
         "required": true,
         "fallback_patterns": [
+          "(?:Nama|NAMA|Name)\\s*[:\\-]?\\s*([A-Z][A-Z\\s]+(?:BIN|BINTI)\\s+[A-Z][A-Z\\s]+?)(?=\\s+(?:Bulan|Jawatan|No\\.|Pusat|Pejabat)|\\n)",
           "(?:Nama|NAMA|Name)\\s*[:\\-]?\\s*([A-Z][A-Z\\s]+(?:BIN|BINTI|Bin|Binti)\\s+[A-Z][A-Z\\s]+)",
           "(?:Nama|NAMA|Name)\\s*[:\\-]?\\s*([A-Z][a-z]+(?:\\s+(?:bin|binti|Bin|Binti)\\s+)?[A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
           "^([A-Z][a-z]+(?:\\s+[A-Z][a-z]+){1,5})(?=\\s+(?:No|Kump|bin|binti))",
@@ -14,16 +15,19 @@
         "exclusion_keywords": ["syarikat", "company", "sdn", "bhd", "bank", "penyata", "bulanan"]
       },
       "id_number": {
-        "keywords": ["no. k/p", "no kp", "no k/p", "no ic", "nric"],
+        "keywords": ["no. k/p", "no kp", "no k/p", "no ic", "nric", "no. kad"],
         "pattern": "\\d{6}-?\\d{2}-?\\d{4}",
         "required": true,
         "fallback_patterns": [
+          "No\\s+KP\\s*:?\\s*(\\d{12})",
+          "No\\s+KP\\s*:?\\s*(\\d{6}-\\d{2}-\\d{4})",
+          "No\\.\\s+Kad\\s*:?\\s*(\\d{12})",
           "(?:no\\.?\\s*k/?p|no\\.?\\s*kp|no\\.?\\s*ic)\\s*[:\\-]?\\s*(\\d{6}-?\\d{2}-?\\d{4})",
           "(?:no\\.?\\s*k/?p|no\\.?\\s*kp|no\\.?\\s*ic)\\s*[:\\-]?\\s*(\\d{12})",
           "(?<!\\d)(\\d{6}-\\d{2}-\\d{4})(?!\\d)",
           "(?<!\\d)(\\d{12})(?!\\d)"
         ],
-        "exclusion_keywords": ["amaun", "rm", "jumlah", "total", "amount", "gaji", "no gaji", "no siri"]
+        "exclusion_keywords": ["amaun", "rm", "jumlah", "total", "amount", "gaji", "no gaji", "no siri", "kwsp", "cukai", "pencen", "perkeso", "akaun"]
       },
       "gross_income": {
         "keywords": ["jumlah pendapatan", "junlah pendapatan", "gross income", "total income", "pendapatan kasar"],
@@ -69,10 +73,13 @@
         "exclusion_keywords": ["gross", "jumlah pendapatan", "bersih", "junlah", "gaji"]
       },
       "month_year": {
-        "keywords": ["m/s", "bulan", "month"],
+        "keywords": ["m/s", "bulan", "month", "bulan gaji"],
         "pattern": "\\d{1,2}/\\d{1,4}",
         "required": true,
         "fallback_patterns": [
+          "Bulan\\s+Gaji\\s*:?\\s*(JANUARI|FEBRUARI|MAC|APRIL|MEI|JUN|JULAI|OGOS|SEPTEMBER|OKTOBER|NOVEMBER|DISEMBER)\\s+(20\\d{2})",
+          "Bulan\\s*:?\\s*(JANUARI|FEBRUARI|MAC|APRIL|MEI|JUN|JULAI|OGOS|SEPTEMBER|OKTOBER|NOVEMBER|DISEMBER)\\s+(20\\d{2})",
+          "Bulan\\s*:?\\s*(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(20\\d{2})",
           "M/S\\s*[:\\-]?\\s*(\\d{1,2})/(\\d{1,2})",
           "\\d{1,2}/\\d{1,2}"
         ]

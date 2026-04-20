@@ -1,6 +1,6 @@
 {
   "engine": "easyocr",
-  "language": "en",
+  "language": "ms",
   "confidence_threshold": 0.5,
   "use_angle_cls": true,
   "paddleocr": {
