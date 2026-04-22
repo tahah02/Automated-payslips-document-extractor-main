@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 class PDFProcessor:
     
     @staticmethod
-    def pdf_to_images(pdf_path: str, output_dir: str = "temp") -> List[str]:
+    def pdf_to_images(pdf_path: str, output_dir: str = "temp", dpi: int = 300, zoom: float = 3.0) -> List[str]:
         try:
             import fitz
             
@@ -17,16 +17,19 @@ class PDFProcessor:
             pdf_document = fitz.open(pdf_path)
             image_paths = []
             
+            dpi_scale = dpi / 72.0
+            total_scale = dpi_scale * zoom
+            
             for page_num in range(len(pdf_document)):
                 page = pdf_document[page_num]
                 
-                pix = page.get_pixmap(matrix=fitz.Matrix(2, 2))
+                pix = page.get_pixmap(matrix=fitz.Matrix(total_scale, total_scale))
                 
                 image_path = f"{output_dir}/page_{page_num + 1}.png"
                 pix.save(image_path)
                 image_paths.append(image_path)
                 
-                logger.info(f"Converted page {page_num + 1} to {image_path}")
+                logger.info(f"Converted page {page_num + 1} to {image_path} (DPI: {dpi}, Zoom: {zoom}x, Total scale: {total_scale:.2f}x)")
             
             pdf_document.close()
             return image_paths

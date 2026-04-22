@@ -1,18 +1,126 @@
 {
   "engine": {
-    "application": {"name": "Payslip Extractor API", "version": "2.0.0", "description": "FastAPI-based payslip extraction system using OCR", "environment": "production"},
-    "server": {"host": "0.0.0.0", "port": 8005, "debug": false, "reload": false, "workers": 1},
-    "logging": {"level": "INFO", "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s", "file": "output/logs/payslip_app.log", "max_bytes": 10485760, "backup_count": 5},
-    "file_handling": {"upload_dir": "uploads/raw", "processed_dir": "uploads/processed", "output_dir": "output/json", "max_upload_size": 52428800, "allowed_extensions": ["pdf", "jpg", "jpeg", "png", "docx", "doc"], "cleanup_on_error": true},
-    "processing": {"request_timeout": 300, "processing_timeout": 300, "max_concurrent_uploads": 5, "async_processing": true, "background_tasks": true},
-    "pdf_processing": {"dpi": 300, "image_format": "png", "max_pages": 10, "page_timeout": 30},
-    "ocr_processing": {"engine": "tesseract", "language": "msa", "timeout": 30, "retry_on_failure": true, "max_retries": 2},
-    "extraction_processing": {"min_confidence": 0.5, "validate_data": true, "calculate_missing_fields": true, "track_validation_errors": true},
-    "api": {"cors": {"allow_origins": ["*"], "allow_credentials": true, "allow_methods": ["*"], "allow_headers": ["*"]}, "rate_limiting": {"enabled": false, "requests_per_minute": 60}, "documentation": {"title": "Payslip Extractor API", "description": "API for extracting payslip information from PDF documents", "version": "2.0.0", "docs_url": "/docs", "redoc_url": "/redoc"}},
-    "database": {"enabled": false, "type": "sqlite", "url": "sqlite:///./payslip_extractor.db"},
-    "cache": {"enabled": false, "type": "memory", "ttl": 3600},
-    "monitoring": {"enabled": false, "metrics_port": 8001, "health_check_interval": 60},
-    "security": {"authentication": {"enabled": false, "type": "jwt"}, "encryption": {"enabled": false, "algorithm": "AES-256"}, "rate_limiting": {"enabled": false, "requests_per_minute": 60}},
-    "features": {"multi_page_support": true, "batch_processing": false, "webhook_notifications": false, "result_export": false, "result_comparison": false}
+    "application": {
+      "name": "Payslip Extractor API",
+      "version": "2.0.0",
+      "description": "FastAPI-based payslip extraction system using OCR",
+      "environment": "production"
+    },
+    "server": {
+      "host": "0.0.0.0",
+      "port": 8005,
+      "debug": false,
+      "reload": false,
+      "workers": 1
+    },
+    "logging": {
+      "level": "INFO",
+      "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+      "file": "output/logs/payslip_app.log",
+      "max_bytes": 10485760,
+      "backup_count": 5
+    },
+    "file_handling": {
+      "upload_dir": "uploads/raw",
+      "processed_dir": "uploads/processed",
+      "output_dir": "output/json",
+      "max_upload_size": 52428800,
+      "allowed_extensions": [
+        "pdf",
+        "jpg",
+        "jpeg",
+        "png",
+        "docx",
+        "doc"
+      ],
+      "cleanup_on_error": true
+    },
+    "processing": {
+      "request_timeout": 300,
+      "processing_timeout": 300,
+      "max_concurrent_uploads": 5,
+      "async_processing": true,
+      "background_tasks": true
+    },
+    "pdf_processing": {
+      "dpi": 300,
+      "image_format": "png",
+      "max_pages": 10,
+      "page_timeout": 30
+    },
+    "ocr_processing": {
+      "engine": "tesseract",
+      "language": "msa",
+      "timeout": 30,
+      "retry_on_failure": true,
+      "max_retries": 2
+    },
+    "extraction_processing": {
+      "min_confidence": 0.5,
+      "validate_data": true,
+      "calculate_missing_fields": true,
+      "track_validation_errors": true
+    },
+    "api": {
+      "cors": {
+        "allow_origins": [
+          "*"
+        ],
+        "allow_credentials": true,
+        "allow_methods": [
+          "*"
+        ],
+        "allow_headers": [
+          "*"
+        ]
+      },
+      "rate_limiting": {
+        "enabled": false,
+        "requests_per_minute": 60
+      },
+      "documentation": {
+        "title": "Payslip Extractor API",
+        "description": "API for extracting payslip information from PDF documents",
+        "version": "2.0.0",
+        "docs_url": "/docs",
+        "redoc_url": "/redoc"
+      }
+    },
+    "database": {
+      "enabled": false,
+      "type": "sqlite",
+      "url": "sqlite:///./payslip_extractor.db"
+    },
+    "cache": {
+      "enabled": false,
+      "type": "memory",
+      "ttl": 3600
+    },
+    "monitoring": {
+      "enabled": false,
+      "metrics_port": 8001,
+      "health_check_interval": 60
+    },
+    "security": {
+      "authentication": {
+        "enabled": false,
+        "type": "jwt"
+      },
+      "encryption": {
+        "enabled": false,
+        "algorithm": "AES-256"
+      },
+      "rate_limiting": {
+        "enabled": false,
+        "requests_per_minute": 60
+      }
+    },
+    "features": {
+      "multi_page_support": true,
+      "batch_processing": false,
+      "webhook_notifications": false,
+      "result_export": false,
+      "result_comparison": false
+    }
   }
 }

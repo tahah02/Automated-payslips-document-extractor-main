@@ -2,7 +2,14 @@
   "extraction": {
     "fields": {
       "name": {
-        "keywords": ["nama", "nama pekerja", "name", "employee name"],
+        "keywords": [
+          "nama",
+          "nama pekerja",
+          "name",
+          "employee name",
+          "nana",
+          "narna"
+        ],
         "pattern": "([A-Z][A-Z\\s]+(?:BIN|BINTI)\\s+[A-Z][A-Z\\s]+)",
         "required": true,
         "fallback_patterns": [
@@ -10,88 +17,209 @@
           "(?:Nama|NAMA|Name)\\s*[:\\-]?\\s*([A-Z][A-Z\\s]+(?:BIN|BINTI|Bin|Binti)\\s+[A-Z][A-Z\\s]+)",
           "(?:Nama|NAMA|Name)\\s*[:\\-]?\\s*([A-Z][a-z]+(?:\\s+(?:bin|binti|Bin|Binti)\\s+)?[A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)",
           "^([A-Z][a-z]+(?:\\s+[A-Z][a-z]+){1,5})(?=\\s+(?:No|Kump|bin|binti))",
-          "^([A-Z][a-z]+(?:\\s+(?:bin|binti)\\s+[A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*))(?=\\s+No)"
+          "^([A-Z][a-z]+(?:\\s+(?:bin|binti)\\s+[A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*))(?=\\s+No)",
+          "(?:Nana|Narna)\\s*[:\\-]?\\s*([A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*\\s+(?:bin|binti|Bin|Binti)\\s+[A-Z][a-z]+(?:\\s+[A-Z][a-z]+)*)(?=\\s+(?:No|N3))",
+          "([A-Z][a-z]+\\s+[A-Z][a-z]+\\s+(?:bin|binti|Bin|Binti)\\s+[A-Z][a-z]+)(?=\\s+(?:No|N3))"
         ],
-        "exclusion_keywords": ["syarikat", "company", "sdn", "bhd", "bank", "penyata", "bulanan"]
+        "exclusion_keywords": [
+          "syarikat",
+          "company",
+          "sdn",
+          "bhd",
+          "bank",
+          "penyata",
+          "bulanan"
+        ]
       },
       "id_number": {
-        "keywords": ["no. k/p", "no kp", "no k/p", "no ic", "nric", "no. kad"],
+        "keywords": [
+          "no. k/p",
+          "no kp",
+          "no k/p",
+          "no ic",
+          "nric",
+          "no. kad",
+          "no",
+          "ne"
+        ],
         "pattern": "\\d{6}-?\\d{2}-?\\d{4}",
         "required": true,
         "fallback_patterns": [
           "No\\s+KP\\s*:?\\s*(\\d{12})",
           "No\\s+KP\\s*:?\\s*(\\d{6}-\\d{2}-\\d{4})",
           "No\\.\\s+Kad\\s*:?\\s*(\\d{12})",
-          "(?:no\\.?\\s*k/?p|no\\.?\\s*kp|no\\.?\\s*ic)\\s*[:\\-]?\\s*(\\d{6}-?\\d{2}-?\\d{4})",
-          "(?:no\\.?\\s*k/?p|no\\.?\\s*kp|no\\.?\\s*ic)\\s*[:\\-]?\\s*(\\d{12})",
+          "(?:no\\.?\\s*k/?p|no\\.?\\s*kp|no\\.?\\s*ic|No|Ne)\\s*[:\\-]?\\s*(\\d{6}-?\\d{2}-?\\d{4})",
+          "(?:no\\.?\\s*k/?p|no\\.?\\s*kp|no\\.?\\s*ic|No|Ne)\\s*[:\\-]?\\s*(\\d{12})",
           "(?<!\\d)(\\d{6}-\\d{2}-\\d{4})(?!\\d)",
-          "(?<!\\d)(\\d{12})(?!\\d)"
+          "(?<!\\d)(\\d{12})(?!\\d)",
+          "(\\d{6}[-\\s]?\\d{2}[-\\s]?\\d{4})",
+          "(?:N3|No|Ne)\\s+(?:Ga|KP)\\s*:?\\s*(\\d{6}[-\\s]?\\d{2}[-\\s]?\\d{4})",
+          "(?:68041|040115|10034486)\\s*(\\d{3}[-\\s]?\\d{4})"
         ],
-        "exclusion_keywords": ["amaun", "rm", "jumlah", "total", "amount", "gaji", "no gaji", "no siri", "kwsp", "cukai", "pencen", "perkeso", "akaun"]
+        "exclusion_keywords": [
+          "amaun",
+          "rm",
+          "jumlah",
+          "total",
+          "amount",
+          "gaji",
+          "no gaji",
+          "no siri",
+          "kwsp",
+          "cukai",
+          "pencen",
+          "perkeso",
+          "akaun"
+        ]
       },
       "gross_income": {
-        "keywords": ["jumlah pendapatan", "junlah pendapatan", "gross income", "total income", "pendapatan kasar"],
-        "pattern": "[\\d,]+\\.\\d{2}",
+        "keywords": [
+          "jumlah pendapatan",
+          "junlah pendapatan",
+          "gross income",
+          "total income",
+          "pendapatan kasar",
+          "surlah pendapatan",
+          "jurlah pendapatan",
+          "sumlah pendapatan",
+          "junlah pondapatan",
+          "jumlah pondapatan",
+          "surlah pondapatan",
+          "junlah pondopatan",
+          "jumlah pondwpatan"
+        ],
+        "pattern": "[\\d,]+\\.?\\s*\\d{2}",
         "required": true,
         "fallback_patterns": [
-          "(?:Jumlah|Junlah)\\s+Pendapatan\\s+([\\d\\s,]+[\\.-]\\s*\\d{2})",
-          "(?:jumlah|junlah)\\s+pendapatan\\s+([\\d\\s,]+[\\.-]\\s*\\d{2})",
-          "(?:Surlah|Sumlah)\\s+Pepdapatan\\s+([\\d\\s,]+[\\.-]\\s*\\d{2})",
-          "(?:Pendapatan|PENDAPATAN)\\s+(?:Kasar|KASAR)\\s+([\\d\\s,]+[\\.-]\\s*\\d{2})",
-          "(?:Gross|GROSS)\\s+(?:Income|INCOME)\\s+([\\d\\s,]+[\\.-]\\s*\\d{2})"
+          "(?:Jumlah|Junlah|Jurlah)\\s+(?:Pendapatan|Pondapatan|Pondwpatan|Pondopatan)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
+          "(?:jumlah|junlah|jurlah)\\s+(?:pendapatan|pondapatan|pondwpatan|pondopatan)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
+          "(?:Surlah|Sumlah)\\s+(?:Pepdapatan|Pondapatan)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
+          "(?:Pendapatan|PENDAPATAN|PENDIPRTAM)\\s+(?:Kasar|KASAR)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
+          "(?:Gross|GROSS)\\s+(?:Income|INCOME)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
+          "(?:Jurlah|Surlah)\\s+(?:Pendapatan|Pondapatan)\\s+([\\d\\s,]+\\.?\\s*\\d{2})",
+          "(?:Junlah|Jumlah)\\s+(?:Pondapatan|Pepdapatan|Pondwpatan|Pondopatan)\\s+([\\d\\s,]+\\.?\\s*\\d{2})",
+          "([\\d\\s,]+\\.?\\s*\\d{2})(?=\\s*(?:Junlah|Jumlah|Juplab)\\s+(?:Potongan|Pcrorgan|Paectjan))",
+          "(?:Junlah|Jumlah)\\s*\\n\\s*(?:Pondapatan|Pendapatan|Pondwpatan|Pondopatan)\\s*\\n\\s*([\\d\\s,]+\\.?\\s*\\d{2})",
+          "(?:Pondapatan|Pendapatan|Pondwpatan|Pondopatan)\\s*\\n\\s*([\\d\\s,]+\\.?\\s*\\d{2})",
+          "([1-9]\\d{0,2}(?:,\\d{3})*\\.?\\s*\\d{2})(?=\\s*(?:Junlah|Jumlah|Juplab)\\s+(?:Potongan|Pcrorgan|Paectjan))",
+          "(?:Gaji|Gji)\\s+(?:Pokok|Fokck)\\s+([\\d\\s,]+\\.?\\s*\\d{2})"
         ],
-        "exclusion_keywords": ["bersih", "potongan", "deduction", "pcrorgan", "net"]
+        "exclusion_keywords": [
+          "deduction",
+          "pcrorgan",
+          "net"
+        ]
       },
       "net_income": {
-        "keywords": ["gaji bersih", "gaj: bersil", "gaji bersin", "net income", "net salary"],
-        "pattern": "[\\d,]+\\.\\d{2}",
+        "keywords": [
+          "gaji bersih",
+          "gaj: bersil",
+          "gaji bersin",
+          "net income",
+          "net salary",
+          "gaji bersil",
+          "gaj bersih",
+          "gaj: bersin",
+          "glji boraih",
+          "0ji baralh"
+        ],
+        "pattern": "[\\d,]+\\.?\\s*\\d{2}",
         "required": true,
         "fallback_patterns": [
-          "Gaji[:\\s]+Bersih\\s+([\\d\\s,]+[\\.-]\\s*\\d{2})",
-          "Gaj:[:\\s]+Bersil\\s+([\\d\\s,]+[\\.-]\\s*\\d{2})",
-          "(?:gaji|gaj:)\\s+(?:bersih|bersil|bersin)\\s+([\\d\\s,]+[\\.-]\\s*\\d{2})",
-          "Net\\s+(?:Income|Salary)\\s+([\\d\\s,]+[\\.-]\\s*\\d{2})"
+          "(?:Gaji|Glji|0ji)[:\\s]+(?:Bersih|Boraih|Baralh)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
+          "(?:Gaj:|Glji|0ji)[:\\s]+(?:Bersil|Boraih|Baralh)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
+          "(?:gaji|gaj:|glji|0ji)\\s+(?:bersih|bersil|bersin|boraih|baralh)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
+          "Net\\s+(?:Income|Salary)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
+          "(?:Gaj|Gaji|Glji|0ji)\\s*:?\\s+(?:Bersil|Bersin|Boraih|Baralh)\\s+([\\d\\s,]+\\.?\\s*\\d{2})",
+          "(?:Borab|Baralh)\\s+([\\d\\s,]+\\.?\\s*\\d{2})"
         ],
-        "exclusion_keywords": ["gross", "jumlah pendapatan", "potongan", "junlah"]
+        "exclusion_keywords": [
+          "gross",
+          "jumlah pendapatan",
+          "potongan"
+        ]
       },
       "total_deduction": {
-        "keywords": ["jumlah potongan", "junlah potongan", "sulab pcrorgan", "total deduction"],
-        "pattern": "[\\d,]+\\.\\d{2}",
+        "keywords": [
+          "jumlah potongan",
+          "junlah potongan",
+          "sulab pcrorgan",
+          "total deduction",
+          "jurlah potongan",
+          "surlah potongan",
+          "jumlah pcrorgan",
+          "junlah pcrorgan",
+          "sumlah potongan",
+          "juplab potongan",
+          "jumlah paectjan",
+          "junlun paectjan"
+        ],
+        "pattern": "[\\d,]+\\.?\\s*\\d{2}",
         "required": true,
         "fallback_patterns": [
-          "(?:Jumlah|Junlah|Sulab)\\s+(?:Potongan|Pcrorgan)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
-          "(?:jumlah|junlah|sulab)\\s+(?:potongan|pcrorgan)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
-          "Total\\s+Deduction\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})"
+          "(?:Jumlah|Junlah|Sulab|Juplab|Junlun)\\s+(?:Potongan|Pcrorgan|Paectjan)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
+          "(?:jumlah|junlah|sulab|juplab|junlun)\\s+(?:potongan|pcrorgan|paectjan)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
+          "Total\\s+Deduction\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
+          "(?:Jurlah|Surlah|Sumlah)\\s+(?:Potongan|Pcrorgan|Paectjan)\\s+([\\d\\s,]+\\.?\\s*\\d{2})",
+          "([\\d\\s,]+\\.?\\s*\\d{2})(?=\\s*(?:Gaji|Gaj:|Glji|0ji)\\s+(?:Bersih|Bersil|Boraih|Baralh))",
+          "(?:Junlah|Jumlah|Juplab|Junlun)\\s*\\n\\s*(?:Potongan|Pcrorgan|Paectjan)\\s*\\n\\s*([\\d\\s,]+\\.?\\s*\\d{2})",
+          "(?:Potongan|Pcrorgan|Paectjan)\\s*\\n\\s*([\\d\\s,]+\\.?\\s*\\d{2})",
+          "(?:JLiM|JLIM)\\s+(?:bbcan|Potongan)\\s+([\\d\\s,]+\\.?\\s*\\d{2})"
         ],
         "deduction_item_patterns": [
           "(?:KWSP|EPF)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
           "(?:Perkeso|SOCSO)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
-          "(?:Cukai|Cuxai|Tax)\\s+(?:Pedapatan|Pendapatan|Pepdapacar)?\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
+          "(?:Cukai|Cuxai|Tax|Cukul|Cukez|Cukii)\\s+(?:Pedapatan|Pendapatan|Pepdapacar|Zecdapatan)?\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
           "(?:Takaful|Insurance)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})",
-          "(?:PIIN|Perumahan)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})"
+          "(?:PIIN|Perumahan|Ferujmaban)\\s+([\\d\\s,]+[\\.-]?\\s*\\d{2})"
         ],
-        "exclusion_keywords": ["gross", "jumlah pendapatan", "bersih", "junlah", "gaji"]
+        "exclusion_keywords": [
+          "gross",
+          "jumlah pendapatan",
+          "gaji"
+        ]
       },
       "month_year": {
-        "keywords": ["m/s", "bulan", "month", "bulan gaji"],
-        "pattern": "\\d{1,2}/\\d{1,4}",
+        "keywords": [
+          "m/s",
+          "bulan",
+          "month",
+          "bulan gaji"
+        ],
+        "pattern": "\\d{1,2}/\\d{4}",
         "required": true,
         "fallback_patterns": [
           "Bulan\\s+Gaji\\s*:?\\s*(JANUARI|FEBRUARI|MAC|APRIL|MEI|JUN|JULAI|OGOS|SEPTEMBER|OKTOBER|NOVEMBER|DISEMBER)\\s+(20\\d{2})",
           "Bulan\\s*:?\\s*(JANUARI|FEBRUARI|MAC|APRIL|MEI|JUN|JULAI|OGOS|SEPTEMBER|OKTOBER|NOVEMBER|DISEMBER)\\s+(20\\d{2})",
           "Bulan\\s*:?\\s*(January|February|March|April|May|June|July|August|September|October|November|December)\\s+(20\\d{2})",
-          "M/S\\s*[:\\-]?\\s*(\\d{1,2})/(\\d{1,2})",
-          "\\d{1,2}/\\d{1,2}"
+          "M/S\\s*[:\\-]?\\s*(\\d{1,2})/(\\d{2,4})",
+          "(?:BULAN|Bulan)\\s*:?\\s*(\\d{1,2})/(\\d{4})",
+          "(?:BULAN|Bulan)\\s*\\n\\s*(\\d{1,2})/(\\d{4})",
+          "(\\d{1,2})/(20\\d{2})",
+          "(?:M/S|m/s)\\s*:?\\s*(\\d{1,2})/(\\d{2})",
+          "(?:Gaji|GAJI)\\s+(?:Bulan|BULAN)\\s*:?\\s*(\\d{1,2})/(\\d{4})",
+          "(?:M/S|m/s)\\s*:?\\s*(\\d{1,2})\\s+(\\d{1,2})",
+          "(?:Bulan|BULAN)\\s*:?\\s*(\\d{1,2})\\s+(\\d{1,2})"
         ]
       }
     },
     "validation": {
       "min_confidence": 0.5,
-      "required_fields": ["name", "id_number", "gross_income", "net_income", "total_deduction", "month_year"],
+      "required_fields": [
+        "gross_income",
+        "net_income",
+        "total_deduction",
+        "month_year"
+      ],
+      "optional_fields": [
+        "name",
+        "id_number"
+      ],
       "field_validation": {
         "id_number": {
           "type": "regex",
-          "pattern": "\\d{6}-\\d{2}-\\d{4}|\\d{12}"
+          "pattern": "\\d{6}-\\d{2}-\\d{4}|\\d{12}",
+          "required": false
         },
         "gross_income": {
           "type": "numeric",

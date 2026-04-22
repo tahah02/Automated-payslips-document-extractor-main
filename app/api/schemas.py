@@ -4,7 +4,6 @@ from datetime import datetime
 
 
 class DocumentExtraction(BaseModel):
-    """Single document extraction result"""
     document_number: int
     document_type: str  # "bank_statement" or "payslip"
     extracted_data: Dict[str, Any]
@@ -13,7 +12,6 @@ class DocumentExtraction(BaseModel):
 
 
 class ExtractionSummary(BaseModel):
-    """Summary of extraction results"""
     bank_statements: Optional[int] = 0
     payslips: Optional[int] = 0
     other: int = 0
@@ -21,7 +19,6 @@ class ExtractionSummary(BaseModel):
 
 
 class ExtractionResult(BaseModel):
-    """Complete extraction result"""
     upload_id: str
     file_type: str
     document_type: str  # "bank_statement" or "payslip"
@@ -36,24 +33,21 @@ class ExtractionResult(BaseModel):
 
 
 class UploadResponse(BaseModel):
-    """Response after file upload"""
     status: str
     upload_id: str
     message: str = "File uploaded successfully. Processing started."
 
 
 class StatusResponse(BaseModel):
-    """Processing status response"""
     status: str  # "processing", "completed", "failed"
     upload_id: str
     message: Optional[str] = None
-    document_type: Optional[str] = None  # Available after classification
+    document_type: Optional[str] = None
     classification_confidence: Optional[float] = None
     result: Optional[ExtractionResult] = None
 
 
 class ErrorResponse(BaseModel):
-    """Error response"""
     status: str = "error"
     error: str
     details: Optional[str] = None

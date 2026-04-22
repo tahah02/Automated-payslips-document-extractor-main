@@ -3,16 +3,13 @@ import sys
 import logging
 from pathlib import Path
 
-# Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Configure environment for PaddleOCR
 os.environ['PADDLE_DEVICE'] = 'cpu'
 os.environ['PADDLE_DISABLE_ONEDNN'] = '1'
 os.environ['PADDLE_DISABLE_FAST_MATH'] = '1'
 os.environ['PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK'] = 'True'
 
-# Configure Tesseract path (if needed)
 try:
     import pytesseract
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
@@ -27,17 +24,14 @@ from app.api.routes import router
 from app.config import settings
 from utils.logger import setup_logger
 
-# Load environment variables
 load_dotenv()
 
-# Setup logging
 logger = setup_logger(__name__, settings.LOG_FILE)
 logging.basicConfig(
     level=getattr(logging, settings.LOG_LEVEL),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
-# Create FastAPI app
 app = FastAPI(
     title=settings.APP_NAME,
     description=settings.APP_DESCRIPTION,
@@ -46,7 +40,6 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -55,19 +48,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include API routes
 app.include_router(router)
 
 
 @app.on_event("startup")
 async def startup_event():
-    """Startup event handler"""
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
     logger.info(f"Server: {settings.HOST}:{settings.PORT}")
     logger.info(f"Debug mode: {settings.DEBUG}")
     logger.info(f"OCR Engine: {settings.OCR_ENGINE}")
     
-    # Create necessary directories
     for directory in [settings.UPLOAD_DIR, settings.PROCESSED_DIR, settings.OUTPUT_DIR]:
         Path(directory).mkdir(parents=True, exist_ok=True)
     
@@ -76,13 +66,11 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Shutdown event handler"""
     logger.info(f"Shutting down {settings.APP_NAME}")
 
 
 @app.get("/")
 async def root():
-    """Root endpoint"""
     return {
         "name": settings.APP_NAME,
         "version": settings.APP_VERSION,
@@ -99,7 +87,6 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint"""
     return {
         "status": "healthy",
         "version": settings.APP_VERSION,

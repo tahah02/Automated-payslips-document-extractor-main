@@ -2,7 +2,6 @@
   "config_version": "2.0.0",
   "schema_version": "2.0.0",
   "last_updated": "2026-04-10",
-  
   "layout": {
     "same_line_tolerance": 5,
     "vertical_tolerance": 50,
@@ -12,7 +11,6 @@
     "use_relative_tolerance": false,
     "merge_only_numeric": true,
     "default_page_height": 1000,
-    
     "table": {
       "min_columns": 2,
       "max_columns": 10,
@@ -21,7 +19,6 @@
       "row_tolerance": 5
     }
   },
-  
   "scoring": {
     "weights": {
       "ocr_confidence": 0.3,
@@ -31,7 +28,6 @@
     },
     "min_confidence_threshold": 0.5
   },
-  
   "features": {
     "use_async": false,
     "enable_debug_endpoints": true,
@@ -40,51 +36,79 @@
     "strict_validation": true,
     "require_auth_for_reload": true
   },
-  
   "classification": {
     "threshold": 0.5,
     "min_keyword_matches": 1,
     "unknown_confidence": 0.5,
     "bank_statement_keywords": [
-      "bank statement", "account", "balance", "transaction",
-      "deposit", "withdrawal", "statement date", "account number",
-      "opening balance", "closing balance", "statement period",
-      "bank name", "account holder", "date", "amount",
-      "reference", "description", "debit", "credit",
-      "statement of account", "account summary",
-      "penyata", "akaun", "baki", "transaksi", "tarikh",
-      "pengeluaran", "deposit", "pembukaan", "penutup",
-      "pemegang", "rujukan", "deskripsi", "jumlah",
-      "كشف", "حساب", "رصيد", "معاملة", "تاريخ",
-      "إيداع", "سحب", "الافتتاحي", "الختامي", "صاحب"
+      "bank statement",
+      "account",
+      "balance",
+      "transaction",
+      "deposit",
+      "withdrawal",
+      "statement date",
+      "account number",
+      "opening balance",
+      "closing balance",
+      "statement period",
+      "bank name",
+      "account holder",
+      "date",
+      "amount",
+      "reference",
+      "description",
+      "debit",
+      "credit",
+      "statement of account",
+      "account summary",
+      "penyata",
+      "akaun",
+      "baki",
+      "transaksi",
+      "tarikh",
+      "pengeluaran",
+      "deposit",
+      "pembukaan",
+      "penutup",
+      "pemegang",
+      "rujukan",
+      "deskripsi",
+      "jumlah",
+      "\u0643\u0634\u0641",
+      "\u062d\u0633\u0627\u0628",
+      "\u0631\u0635\u064a\u062f",
+      "\u0645\u0639\u0627\u0645\u0644\u0629",
+      "\u062a\u0627\u0631\u064a\u062e",
+      "\u0625\u064a\u062f\u0627\u0639",
+      "\u0633\u062d\u0628",
+      "\u0627\u0644\u0627\u0641\u062a\u062a\u0627\u062d\u064a",
+      "\u0627\u0644\u062e\u062a\u0627\u0645\u064a",
+      "\u0635\u0627\u062d\u0628"
     ]
   },
-  
   "confidence": {
     "weights": {
       "ocr": 0.45,
-      "regex": 0.30,
-      "proximity": 0.20,
+      "regex": 0.3,
+      "proximity": 0.2,
       "source": 0.05
     },
     "min_score": 0.95,
     "default_ocr_confidence": 0.6,
     "pdf_source_bonus": 0.15
   },
-  
   "pdf_mode_detection": {
     "min_words_per_page": 30,
     "min_chars_per_page": 200,
     "text_density_threshold": 0.1
   },
-  
   "proximity": {
     "max_distance": 50,
     "same_line_tolerance": 5,
     "vertical_tolerance": 10,
     "horizontal_neighbor_distance": 100
   },
-  
   "table_extraction": {
     "vertical_strategy": "lines",
     "horizontal_strategy": "lines",
@@ -106,7 +130,6 @@
     "intersection_y_tolerance": 3,
     "cluster_tolerance": 5
   },
-  
   "validation": {
     "id_number_pattern": "^\\d{6}-\\d{2}-\\d{4}$",
     "currency_pattern": "^\\d+\\.\\d{2}$",
@@ -124,28 +147,61 @@
       "max_month": 12
     }
   },
-  
   "text_constraints": {
     "min_name_length": 5,
     "max_name_length": 100,
     "min_line_length": 3,
     "min_word_length": 1
   },
-  
   "extraction": {
     "bank_statement": {
       "account_holder_name": {
         "min_length": 5,
         "max_length": 100,
         "exclusion_patterns": [
-          "CIMB", "Statement", "Account", "Number", "Date", "Balance",
-          "Period", "Page", "Halaman", "Summary", "Ringkasan", "JALAN",
-          "KUALA", "LUMPUR", "RM", "Tarikh", "Penyata", "Akaun",
-          "Simpanan", "Transaksi", "Butir", "Withdrawal", "Deposit",
-          "GST", "Baki", "Pengeluaran", "Rujukan", "Diskripsi",
-          "Savings", "Eligible", "PIDM", "Bonus", "Points", "Mata",
-          "Ganjaran", "Opening", "Closing", "Interest", "Fee",
-          "Transfer", "ATM", "Debit", "Credit"
+          "CIMB",
+          "Statement",
+          "Account",
+          "Number",
+          "Date",
+          "Balance",
+          "Period",
+          "Page",
+          "Halaman",
+          "Summary",
+          "Ringkasan",
+          "JALAN",
+          "KUALA",
+          "LUMPUR",
+          "RM",
+          "Tarikh",
+          "Penyata",
+          "Akaun",
+          "Simpanan",
+          "Transaksi",
+          "Butir",
+          "Withdrawal",
+          "Deposit",
+          "GST",
+          "Baki",
+          "Pengeluaran",
+          "Rujukan",
+          "Diskripsi",
+          "Savings",
+          "Eligible",
+          "PIDM",
+          "Bonus",
+          "Points",
+          "Mata",
+          "Ganjaran",
+          "Opening",
+          "Closing",
+          "Interest",
+          "Fee",
+          "Transfer",
+          "ATM",
+          "Debit",
+          "Credit"
         ],
         "fallback_patterns": [
           "(\\d{2}/\\d{2}/\\d{4})\\s+([A-Za-z\\s]+?)\\s+(\\d+,?\\s*JALAN|Summary|Ringkasan)"
@@ -163,13 +219,15 @@
       }
     }
   },
-  
   "api": {
     "max_upload_mb": 50,
     "request_timeout_seconds": 300,
-    "allowed_content_types": ["application/pdf", "image/jpeg", "image/png"]
+    "allowed_content_types": [
+      "application/pdf",
+      "image/jpeg",
+      "image/png"
+    ]
   },
-  
   "templates": {
     "default": {},
     "government_payslip": {

@@ -11,20 +11,16 @@ from utils.config_loader import ConfigLoader
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["unified-extractor"])
 
-# Global state for tracking processing status
 processing_status = {}
 
-# Load OCR settings from ocr_config.json
 ocr_config = ConfigLoader.load_config("ocr_config")
 ocr_engine = ocr_config.get("engine", "paddleocr")
 ocr_language = ocr_config.get("language", "en")
 
 logger.info(f"Initializing pipeline with OCR engine: {ocr_engine}, language: {ocr_language}")
 
-# Initialize unified pipeline with config from ocr_config.json
 pipeline = UnifiedExtractionPipeline(ocr_engine=ocr_engine, ocr_language=ocr_language)
 
-# Setup directories
 UPLOAD_DIR = Path("uploads/raw")
 PROCESSED_DIR = Path("uploads/processed")
 OUTPUT_DIR = Path("output/json")
@@ -35,25 +31,12 @@ for directory in [UPLOAD_DIR, PROCESSED_DIR, OUTPUT_DIR]:
 
 @router.post("/upload", response_model=UploadResponse)
 async def upload_document(file: UploadFile = File(...), background_tasks: BackgroundTasks = None):
-    """
-    Upload a document (bank statement or payslip) for processing.
-    The system will automatically detect the document type and extract fields.
-    
-    Args:
-        file: PDF file to process
-        
-    Returns:
-        UploadResponse with upload_id for tracking
-    """
     try:
-        # Validate file type
         if not file.filename.lower().endswith('.pdf'):
             raise HTTPException(status_code=400, detail="Only PDF files are supported")
         
-        # Generate unique upload ID
         upload_id = str(uuid.uuid4())
         
-        # Save uploaded file
         file_path = UPLOAD_DIR / f"{upload_id}.pdf"
         content = await file.read()
         with open(file_path, 'wb') as f:
@@ -61,7 +44,6 @@ async def upload_document(file: UploadFile = File(...), background_tasks: Backgr
         
         logger.info(f"File uploaded: {file.filename} with ID: {upload_id}")
         
-        # Initialize processing status
         processing_status[upload_id] = {
             "status": "processing",
             "upload_id": upload_id,
@@ -70,7 +52,6 @@ async def upload_document(file: UploadFile = File(...), background_tasks: Backgr
             "classification_confidence": None
         }
         
-        # Start background processing
         if background_tasks:
             background_tasks.add_task(process_document, upload_id, str(file_path))
         
@@ -89,15 +70,6 @@ async def upload_document(file: UploadFile = File(...), background_tasks: Backgr
 
 @router.get("/status/{upload_id}", response_model=StatusResponse)
 async def get_status(upload_id: str):
-    """
-    Get processing status for an upload.
-    
-    Args:
-        upload_id: Unique upload identifier
-        
-    Returns:
-        StatusResponse with current processing status
-    """
     if upload_id not in processing_status:
         raise HTTPException(status_code=404, detail="Upload ID not found")
     
@@ -106,15 +78,6 @@ async def get_status(upload_id: str):
 
 @router.get("/result/{upload_id}", response_model=ExtractionResult)
 async def get_result(upload_id: str):
-    """
-    Get extraction results for a completed upload.
-    
-    Args:
-        upload_id: Unique upload identifier
-        
-    Returns:
-        ExtractionResult with extracted data
-    """
     if upload_id not in processing_status:
         raise HTTPException(status_code=404, detail="Upload ID not found")
     
@@ -126,7 +89,6 @@ async def get_result(upload_id: str):
     if status_info["status"] == "failed":
         raise HTTPException(status_code=400, detail=status_info.get("message", "Processing failed"))
     
-    # Load result from file
     result_path = OUTPUT_DIR / f"{upload_id}.json"
     if not result_path.exists():
         raise HTTPException(status_code=404, detail="Result file not found")
@@ -138,23 +100,13 @@ async def get_result(upload_id: str):
 
 
 async def process_document(upload_id: str, file_path: str):
-    """
-    Background task to process document.
-    
-    Args:
-        upload_id: Unique upload identifier
-        file_path: Path to uploaded PDF file
-    """
     try:
         logger.info(f"Starting processing for {upload_id}")
         
-        # Process using unified pipeline
         result = pipeline.process(upload_id, file_path)
         
-        # Save result
         pipeline.save_result(upload_id, result)
         
-        # Update status
         processing_status[upload_id] = {
             "status": "completed",
             "upload_id": upload_id,

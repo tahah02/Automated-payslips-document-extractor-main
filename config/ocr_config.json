@@ -9,7 +9,9 @@
     "use_gpu": false
   },
   "easyocr": {
-    "languages": ["en"],
+    "languages": [
+      "en"
+    ],
     "gpu": false
   },
   "tesseract": {

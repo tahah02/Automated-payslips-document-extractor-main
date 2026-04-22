@@ -24,7 +24,10 @@
           "english": "en",
           "malay": "ms",
           "chinese": "ch",
-          "multi": ["en", "ms"]
+          "multi": [
+            "en",
+            "ms"
+          ]
         },
         "config": {
           "gpu": false,
@@ -38,7 +41,10 @@
           "english": "en",
           "malay": "ms",
           "chinese": "ch",
-          "multi": ["en", "ms"]
+          "multi": [
+            "en",
+            "ms"
+          ]
         },
         "config": {
           "use_angle_cls": false,

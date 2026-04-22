@@ -41,18 +41,15 @@ class PayslipExtractor:
     def _extract_with_spatial(self, page, text: str) -> Dict[str, Any]:
         extracted = {}
         
-        # Try spatial extraction for name
         extracted["name"] = self.spatial_extractor.extract_name_from_page(page)
         logger.info(f"Name from spatial: {extracted['name']}")
         if not extracted["name"]:
             extracted["name"] = self._extract_field(text, "name")
             logger.info(f"Name from regex: {extracted['name']}")
         
-        # Clean name - remove trailing newline and text after it
         if extracted["name"]:
             extracted["name"] = extracted["name"].split('\n')[0].strip()
         
-        # Try spatial extraction for ID
         id_spatial = self.spatial_extractor.extract_field_by_position(page, "No. K/P", "right")
         if not id_spatial:
             id_spatial = self.spatial_extractor.extract_field_by_position(page, "No KP", "right")
@@ -60,7 +57,6 @@ class PayslipExtractor:
         extracted["id_number"] = id_spatial if id_spatial else self._extract_field(text, "id_number")
         logger.info(f"Final ID: {extracted['id_number']}")
         
-        # Try spatial extraction for gross income
         gross_spatial = self.spatial_extractor.extract_field_by_position(page, "Jumlah Pendapatan", "right")
         logger.info(f"Gross from spatial (raw): {gross_spatial}")
         if gross_spatial:
@@ -71,7 +67,6 @@ class PayslipExtractor:
             extracted["gross_income"] = self._extract_currency_field(text, "gross_income")
         logger.info(f"Final gross: {extracted['gross_income']}")
         
-        # Try spatial extraction for deduction
         deduction_spatial = self.spatial_extractor.extract_field_by_position(page, "Jumlah Potongan", "right")
         if deduction_spatial:
             deduction_cleaned = self.spatial_extractor.clean_numeric_value(deduction_spatial)
@@ -79,13 +74,11 @@ class PayslipExtractor:
         else:
             extracted["total_deduction"] = self._extract_currency_field(text, "total_deduction")
         
-        # If spatial extraction failed, calculate from items
         if not extracted["total_deduction"] or extracted["total_deduction"] == "0.00":
             calculated_deduction = self._calculate_total_deduction(text)
             if calculated_deduction:
                 extracted["total_deduction"] = calculated_deduction
         
-        # Try spatial extraction for net income
         net_spatial = self.spatial_extractor.extract_field_by_position(page, "Gaji Bersih", "right")
         if net_spatial:
             net_cleaned = self.spatial_extractor.clean_numeric_value(net_spatial)
@@ -93,15 +86,12 @@ class PayslipExtractor:
         else:
             extracted["net_income"] = self._extract_currency_field(text, "net_income")
         
-        # Extract month/year
         extracted["month_year"] = self._extract_field(text, "month_year")
         
-        # Clean currency values
         extracted["gross_income"] = self._clean_currency(extracted.get("gross_income"))
         extracted["total_deduction"] = self._clean_currency(extracted.get("total_deduction"))
         extracted["net_income"] = self._clean_currency(extracted.get("net_income"))
         
-        # Calculate net income if needed
         net_income_cleaned = extracted["net_income"]
         if net_income_cleaned == "0.00" or not extracted["net_income"]:
             try:
@@ -121,7 +111,6 @@ class PayslipExtractor:
             net = float(extracted["net_income"])
             deduction = float(extracted["total_deduction"])
             
-            # If gross is 0 but net and deduction exist, something is wrong
             if gross == 0 and net > 0:
                 logger.warning(f"Gross is 0 but net is {net} - extraction may have failed")
                 # Don't try to calculate deduction from 0 gross
@@ -142,7 +131,6 @@ class PayslipExtractor:
             logger.warning(f"Could not validate math: {str(e)}")
             pass
         
-        # Log what was extracted
         logger.info(f"Spatial extraction results: name={bool(extracted['name'])}, id={bool(extracted['id_number'])}, gross={extracted['gross_income']}, deduction={extracted['total_deduction']}, net={extracted['net_income']}")
         
         return extracted
@@ -153,7 +141,6 @@ class PayslipExtractor:
         extracted_name = self._extract_field(text, "name")
         extracted_id = self._extract_field(text, "id_number")
         
-        # Extract in order: gross -> deduction -> net (to avoid token conflicts)
         extracted_gross = self._extract_currency_field(text, "gross_income")
         logger.info(f"Extracted gross_income: {extracted_gross}")
         
@@ -263,7 +250,6 @@ class PayslipExtractor:
         fallback_patterns = field_config.get("fallback_patterns", [])
         exclusion_keywords = field_config.get("exclusion_keywords", [])
         
-        # Special handling for month_year - try to extract month name formats first
         if field_name == "month_year":
             month_patterns = [
                 r'Bulan\s+Gaji\s*:?\s*(JANUARI|FEBRUARI|MAC|APRIL|MEI|JUN|JULAI|OGOS|SEPTEMBER|OKTOBER|NOVEMBER|DISEMBER|January|February|March|April|May|June|July|August|September|October|November|December)\s+(20\d{2})',
@@ -283,7 +269,6 @@ class PayslipExtractor:
                 if match:
                     result = match.group(1).strip()
                     
-                    # Check exclusion keywords in surrounding context
                     if exclusion_keywords:
                         context_start = max(0, match.start() - 50)
                         context_end = min(len(text), match.end() + 50)
@@ -301,7 +286,6 @@ class PayslipExtractor:
                 if match:
                     result = match.group(1).strip()
                     
-                    # Check exclusion keywords
                     if exclusion_keywords:
                         context_start = max(0, match.start() - 50)
                         context_end = min(len(text), match.end() + 50)
@@ -320,13 +304,11 @@ class PayslipExtractor:
             for match in matches:
                 try:
                     result = match.group(1).strip()
-                    # For month_year with 2 groups (month name + year)
                     if field_name == "month_year" and match.lastindex == 2:
                         result = f"{match.group(1)} {match.group(2)}"
                 except IndexError:
                     result = match.group(0).strip()
                 
-                # Check exclusion keywords in surrounding context
                 if exclusion_keywords:
                     context_start = max(0, match.start() - 50)
                     context_end = min(len(text), match.end() + 50)
@@ -366,7 +348,6 @@ class PayslipExtractor:
                 match = re.search(rf'{keyword}[:\s]*({pattern})', text, re.IGNORECASE)
                 if match:
                     result = match.group(1).strip()
-                    # Special handling for month_year field
                     if field_name == "month_year":
                         result = self._format_month_year(result, text)
                     return result
@@ -395,43 +376,79 @@ class PayslipExtractor:
         return None
     
     def _format_month_year(self, value: str, full_text: str) -> str:
-        """Format month/year to MM/YYYY format"""
-        # If already in correct format MM/YYYY
+        value = value.strip()
+        
+        if re.match(r'^M/S\s*:\s*\d{1,2}/\d{1,2}$', value, re.IGNORECASE):
+            match = re.search(r'(\d{1,2})/(\d{1,2})$', value)
+            if match:
+                potential_month = match.group(1)
+                potential_day = match.group(2)
+                
+                year_match = re.search(r'\b(20\d{2})\b', full_text)
+                if year_match:
+                    year = year_match.group(1)
+                    if 1 <= int(potential_month) <= 12:
+                        month = potential_month.zfill(2)
+                        return f"{month}/{year}"
+                    elif 1 <= int(potential_day) <= 12 and int(potential_month) > 12:
+                        month = potential_day.zfill(2)
+                        return f"{month}/{year}"
+                    else:
+                        month = potential_month.zfill(2)
+                        return f"{month}/{year}"
+                else:
+                    month = potential_month.zfill(2) if int(potential_month) <= 12 else potential_day.zfill(2)
+                    return f"{month}/2025"
+        
         if re.match(r'^\d{1,2}/\d{4}$', value):
             parts = value.split('/')
             month = parts[0].zfill(2)
             return f"{month}/{parts[1]}"
         
-        # If in M/M format (like 1/22 from M/S: 1/22), need to find the actual year
         if re.match(r'^\d{1,2}/\d{1,2}$', value):
             parts = value.split('/')
             potential_month = parts[0]
             potential_day = parts[1]
             
-            # Look for a 4-digit year in the full text
             year_match = re.search(r'\b(20\d{2})\b', full_text)
             if year_match:
                 year = year_match.group(1)
                 
-                # Determine which number is the month
                 # If first number is 1-12, it's likely the month
                 if 1 <= int(potential_month) <= 12:
                     month = potential_month.zfill(2)
                     return f"{month}/{year}"
-                # If second number is 1-12 and first is > 12, swap them
                 elif 1 <= int(potential_day) <= 12 and int(potential_month) > 12:
                     month = potential_day.zfill(2)
                     return f"{month}/{year}"
                 else:
-                    # Default to first number as month
                     month = potential_month.zfill(2)
                     return f"{month}/{year}"
             else:
-                # No year found, assume current year 2025
                 month = potential_month.zfill(2) if int(potential_month) <= 12 else potential_day.zfill(2)
                 return f"{month}/2025"
         
-        # If month name format (JANUARI 2025, January 2025, etc.)
+        if re.match(r'^\d{1,2}\s+\d{1,2}$', value):
+            parts = value.split()
+            potential_month = parts[0]
+            potential_day = parts[1]
+            
+            year_match = re.search(r'\b(20\d{2})\b', full_text)
+            if year_match:
+                year = year_match.group(1)
+                if 1 <= int(potential_month) <= 12:
+                    month = potential_month.zfill(2)
+                    return f"{month}/{year}"
+                elif 1 <= int(potential_day) <= 12 and int(potential_month) > 12:
+                    month = potential_day.zfill(2)
+                    return f"{month}/{year}"
+                else:
+                    month = potential_month.zfill(2)
+                    return f"{month}/{year}"
+            else:
+                month = potential_month.zfill(2) if int(potential_month) <= 12 else potential_day.zfill(2)
+                return f"{month}/2025"
+        
         month_names = {
             'januari': '01', 'februari': '02', 'mac': '03', 'april': '04',
             'mei': '05', 'jun': '06', 'julai': '07', 'ogos': '08',
@@ -443,18 +460,14 @@ class PayslipExtractor:
             'okt': '10', 'oct': '10', 'nov': '11', 'des': '12', 'dec': '12'
         }
         
-        # Try to extract month name and year from value or full text
         for month_name, month_num in month_names.items():
             if month_name in value.lower():
-                # Look for year in the value first
                 year_match = re.search(r'(20\d{2})', value)
                 if year_match:
                     return f"{month_num}/{year_match.group(1)}"
-                # If not in value, look in full text
                 year_match = re.search(r'\b(20\d{2})\b', full_text)
                 if year_match:
                     return f"{month_num}/{year_match.group(1)}"
-                # Default to current year
                 return f"{month_num}/2025"
         
         return value
@@ -464,40 +477,51 @@ class PayslipExtractor:
         patterns = field_config.get("fallback_patterns", [])
         exclusion_keywords = field_config.get("exclusion_keywords", [])
         
-        # Direct pattern matching - NO PROXIMITY
-        for pattern in patterns:
+        logger.info(f"=== DEBUGGING {field_name} ===")
+        logger.info(f"Patterns count: {len(patterns)}")
+        logger.info(f"Exclusion keywords: {exclusion_keywords}")
+        
+        for i, pattern in enumerate(patterns):
+            logger.info(f"Trying pattern {i+1}: {pattern[:50]}...")
             matches = list(re.finditer(pattern, text, re.IGNORECASE | re.MULTILINE))
+            logger.info(f"Pattern {i+1} matches: {len(matches)}")
             
             for match in matches:
                 try:
                     value_str = match.group(1).strip()
+                    logger.info(f"Found value: {value_str}")
                 except IndexError:
+                    logger.info("IndexError - no group 1")
                     continue
                 
-                # Skip if already used
                 if value_str in self.used_tokens:
-                    logger.debug(f"Skipping already used token for {field_name}: {value_str}")
+                    logger.info(f"Skipping already used token for {field_name}: {value_str}")
                     continue
                 
-                # Check exclusion keywords in surrounding context
                 context_start = max(0, match.start() - 100)
                 context_end = min(len(text), match.end() + 100)
                 context = text[context_start:context_end].lower()
                 
-                # Skip if exclusion keyword found
-                if any(keyword.lower() in context for keyword in exclusion_keywords):
-                    logger.debug(f"Rejected {field_name} due to exclusion: {value_str}")
+                logger.info(f"Context: {context[:100]}...")
+                
+                excluded = False
+                for keyword in exclusion_keywords:
+                    if keyword.lower() in context:
+                        logger.info(f"Rejected {field_name} due to exclusion: {keyword}")
+                        excluded = True
+                        break
+                
+                if excluded:
                     continue
                 
-                # Mark as used and return
                 self.used_tokens.add(value_str)
-                logger.info(f"Extracted {field_name}: {value_str} using pattern")
+                logger.info(f"SUCCESS: Extracted {field_name}: {value_str} using pattern {i+1}")
                 return value_str
         
+        logger.info(f"FAILED: No patterns matched for {field_name}")
         return None
     
     def _extract_by_proximity(self, text: str, keywords: List[str], exclusion_keywords: List[str], max_distance: int = 100) -> Optional[str]:
-        """DEPRECATED - Not used anymore"""
         return None
     
     def _calculate_total_deduction(self, text: str) -> Optional[str]:
@@ -529,9 +553,7 @@ class PayslipExtractor:
     
     def _parse_number(self, value_str: str) -> Optional[float]:
         try:
-            # Remove spaces, commas, RM, and handle both . and - as decimal separators
             cleaned = value_str.replace(" ", "").replace(",", "").replace("RM", "").strip()
-            # Replace - with . for decimal separator
             cleaned = cleaned.replace("-", ".")
             return float(cleaned)
         except (ValueError, AttributeError):
@@ -542,18 +564,67 @@ class PayslipExtractor:
             return "0.00"
         
         try:
-            # Remove spaces, commas, RM, and handle both . and - as decimal separators
-            cleaned = value.replace(" ", "").replace(",", "").replace("RM", "").strip()
-            # Replace - with . for decimal separator
+            # Handle spaced decimals like '3,143 57' and '7 702 02' and other OCR variations
+            original_value = value
+            logger.info(f"Cleaning currency value: '{original_value}'")
+            
+            # First, handle spaced numbers like "3,143 57" or "7 702 02"
+            if ' ' in value and any(c.isdigit() for c in value):
+                # Check if it looks like "number space number" pattern
+                parts = value.strip().split()
+                if len(parts) == 2 and all(any(c.isdigit() for c in part) for part in parts):
+                    if len(parts[1].replace(',', '').replace('.', '')) <= 2:
+                        # Treat as "dollars cents" format
+                        dollars = parts[0].replace(',', '').replace('.', '')
+                        cents = parts[1].replace(',', '').replace('.', '')
+                        value = f"{dollars}.{cents.zfill(2)}"
+                        logger.info(f"Converted spaced format: '{original_value}' -> '{value}'")
+                    else:
+                        value = ''.join(parts)
+                        logger.info(f"Joined spaced numbers: '{original_value}' -> '{value}'")
+            
+            cleaned = value.replace(" ", "").replace("RM", "").strip()
+            
+            if '.' in cleaned and ',' in cleaned:
+                cleaned = cleaned.replace(',', '')
+            elif '.' in cleaned and cleaned.count('.') == 1:
+                pass
+            elif ',' in cleaned and cleaned.count(',') == 1 and not '.' in cleaned:
+                cleaned = cleaned.replace(',', '.')
+            elif cleaned.isdigit() and len(cleaned) > 4:
+                cleaned = cleaned[:-2] + '.' + cleaned[-2:]
+            elif cleaned.isdigit() and len(cleaned) <= 4:
+                cleaned = cleaned + '.00'
+            
             cleaned = cleaned.replace("-", ".")
+            
+            # Handle cases like "314357" where we need to add decimal
+            if '.' not in cleaned and len(cleaned) > 2:
+                if len(cleaned) >= 3:
+                    cleaned = cleaned[:-2] + '.' + cleaned[-2:]
+            
             numeric = float(cleaned)
-            return f"{numeric:.2f}"
-        except (ValueError, AttributeError):
+            result = f"{numeric:.2f}"
+            logger.info(f"Final cleaned value: '{original_value}' -> '{result}'")
+            return result
+        except (ValueError, AttributeError) as e:
+            logger.warning(f"Failed to clean currency '{value}': {str(e)}")
             return "0.00"
     
     def calculate_confidence(self, extracted_data: Dict[str, Any]) -> float:
-        required_fields = ["name", "id_number", "gross_income", "net_income", "total_deduction", "month_year"]
-        filled_fields = sum(1 for field in required_fields if extracted_data.get(field) and extracted_data.get(field) != "0.00")
-        confidence = filled_fields / len(required_fields)
-        logger.info(f"Payslip confidence: {confidence:.2f} ({filled_fields}/{len(required_fields)} fields)")
-        return round(confidence, 2)
+        core_fields = ["gross_income", "net_income", "total_deduction", "month_year"]
+        # Optional fields that add to confidence but aren't required
+        optional_fields = ["name", "id_number"]
+        
+        filled_core = sum(1 for field in core_fields if extracted_data.get(field) and extracted_data.get(field) != "0.00")
+        
+        filled_optional = sum(1 for field in optional_fields if extracted_data.get(field) and extracted_data.get(field) not in [None, "", "0.00"])
+        
+        core_confidence = (filled_core / len(core_fields)) * 0.8
+        
+        optional_confidence = (filled_optional / len(optional_fields)) * 0.2
+        
+        total_confidence = core_confidence + optional_confidence
+        
+        logger.info(f"Payslip confidence: {total_confidence:.2f} (core: {filled_core}/{len(core_fields)}, optional: {filled_optional}/{len(optional_fields)})")
+        return round(total_confidence, 2)

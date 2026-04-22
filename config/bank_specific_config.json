@@ -1,64 +1,111 @@
 {
   "bsn": {
     "account_number": {
-      "keywords": ["No.Akaun", "Account No"],
+      "keywords": [
+        "No.Akaun",
+        "Account No"
+      ],
       "pattern": "\\b\\d{16}\\b",
       "position": "top",
       "required": true
     },
     "account_holder_name": {
-      "keywords": [],
+      "keywords": [
+        "ENCIK",
+        "PUAN",
+        "account holder",
+        "name",
+        "nama",
+        "account name"
+      ],
+      "exclusion_patterns": [
+        "Statement",
+        "Penyata",
+        "Account",
+        "Akaun",
+        "Bank",
+        "Address",
+        "Alamat",
+        "Date",
+        "Tarikh",
+        "BRANCH",
+        "CAWANGAN",
+        "PENYATA AKAUN"
+      ],
       "pattern": "[A-Z][A-Z\\s]+(?=\\s+No\\.Akaun)",
       "position": "top",
       "required": true
     },
     "statement_date": {
-      "keywords": ["Statement Date:", "Tarikh Penyata"],
+      "keywords": [
+        "Statement Date:",
+        "Tarikh Penyata"
+      ],
       "pattern": "\\d{2}/\\d{2}/\\d{4}",
       "format": "DD/MM/YYYY",
       "required": true
     },
     "opening_balance": {
-      "keywords": ["Baki Hadapan"],
+      "keywords": [
+        "Baki Hadapan"
+      ],
       "pattern": "[\\d,\\.]+",
       "position": "first_transaction",
       "required": true
     },
     "closing_balance": {
-      "keywords": ["Baki Sedia Ada", "Available Balance"],
+      "keywords": [
+        "Baki Sedia Ada",
+        "Available Balance"
+      ],
       "pattern": "[\\d,\\.]+",
       "position": "summary_section",
       "anchor": "summary_only",
       "required": true
     },
     "total_debit": {
-      "keywords": ["Jumlah Debit", "Total Debit:"],
+      "keywords": [
+        "Jumlah Debit",
+        "Total Debit:"
+      ],
       "pattern": "[\\d,\\.]+",
       "position": "summary_section",
       "number_format": "mixed",
       "required": false
     },
     "total_credit": {
-      "keywords": ["Jumlah Kredit", "Total Credit:"],
+      "keywords": [
+        "Jumlah Kredit",
+        "Total Credit:"
+      ],
       "pattern": "[\\d,\\.]+",
       "position": "summary_section",
       "number_format": "mixed",
       "required": false
     },
     "statement_period_from": {
-      "keywords": ["From", "Dari"],
+      "keywords": [
+        "From",
+        "Dari"
+      ],
       "pattern": "\\d{2}/\\d{2}/\\d{4}",
       "required": false
     },
     "statement_period_to": {
-      "keywords": ["To", "Hingga"],
+      "keywords": [
+        "To",
+        "Hingga"
+      ],
       "pattern": "\\d{2}/\\d{2}/\\d{4}",
       "required": false
     }
   },
   "public_islamic": {
     "account_number": {
-      "keywords": ["Nombor Akaun", "Account Number"],
+      "keywords": [
+        "Nombor Akaun",
+        "Account Number"
+      ],
       "pattern": "\\b\\d{10}\\b",
       "position": "top",
       "required": true
@@ -70,107 +117,158 @@
       "required": true
     },
     "statement_date": {
-      "keywords": ["Tarikh Penyata", "Statement Date"],
+      "keywords": [
+        "Tarikh Penyata",
+        "Statement Date"
+      ],
       "pattern": "\\d{1,2}\\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December)\\s+\\d{4}",
       "format": "DD Month YYYY",
       "required": true
     },
     "opening_balance": {
-      "keywords": ["Balance From Last Statement"],
+      "keywords": [
+        "Balance From Last Statement"
+      ],
       "pattern": "[\\d,\\.]+",
       "position": "first_transaction",
       "required": true
     },
     "closing_balance": {
-      "keywords": ["Baki Penutup", "Closing Balance"],
+      "keywords": [
+        "Baki Penutup",
+        "Closing Balance"
+      ],
       "pattern": "[\\d,\\.]+",
       "position": "summary_or_last_page",
-      "search_pages": ["first", "last"],
+      "search_pages": [
+        "first",
+        "last"
+      ],
       "required": true
     },
     "total_debit": {
-      "keywords": ["Jumlah Debit", "Total Debits"],
+      "keywords": [
+        "Jumlah Debit",
+        "Total Debits"
+      ],
       "pattern": "[\\d,\\.]+",
       "position": "summary_section",
       "required": false
     },
     "total_credit": {
-      "keywords": ["Jumlah Kredit", "Total Credits"],
+      "keywords": [
+        "Jumlah Kredit",
+        "Total Credits"
+      ],
       "pattern": "[\\d,\\.]+",
       "position": "summary_section",
       "required": false
     },
     "statement_period_from": {
-      "keywords": ["From", "Dari"],
+      "keywords": [
+        "From",
+        "Dari"
+      ],
       "pattern": "\\d{2}/\\d{2}/\\d{4}",
       "required": false
     },
     "statement_period_to": {
-      "keywords": ["To", "Hingga"],
+      "keywords": [
+        "To",
+        "Hingga"
+      ],
       "pattern": "\\d{2}/\\d{2}/\\d{4}",
       "required": false
     }
   },
   "bank_islam": {
     "account_number": {
-      "keywords": ["NOMBOR AKAUN", "ACCOUNT NO"],
+      "keywords": [
+        "NOMBOR AKAUN",
+        "ACCOUNT NO"
+      ],
       "pattern": "\\b\\d{14}\\b",
       "position": "top",
       "required": true
     },
     "account_holder_name": {
-      "keywords": ["ENCIK", "PUAN", "CIKGU"],
+      "keywords": [
+        "ENCIK",
+        "PUAN",
+        "CIKGU"
+      ],
       "pattern": "(?:ENCIK|PUAN|CIKGU)\\s+[A-Z\\s]+(?=\\s+TARIKH)",
       "position": "top",
       "required": true
     },
     "statement_date": {
-      "keywords": ["TARIKH PENYATA", "STATEMENT DATE"],
+      "keywords": [
+        "TARIKH PENYATA",
+        "STATEMENT DATE"
+      ],
       "pattern": "\\d{2}/\\d{2}/\\d{2}",
       "format": "DD/MM/YY",
       "required": true
     },
     "opening_balance": {
-      "keywords": ["BAL B/F", "BAL BIF"],
+      "keywords": [
+        "BAL B/F",
+        "BAL BIF"
+      ],
       "pattern": "[\\d,\\.]+",
       "position": "first_transaction",
       "required": true
     },
     "closing_balance": {
-      "keywords": ["BAL C/F"],
+      "keywords": [
+        "BAL C/F"
+      ],
       "pattern": "[\\d,\\.]+",
       "position": "last_transaction",
       "fallback": "last_balance_in_statement",
       "required": true
     },
     "total_debit": {
-      "keywords": ["TOTAL DEBIT"],
+      "keywords": [
+        "TOTAL DEBIT"
+      ],
       "pattern": "[\\d,\\.]+",
       "position": "summary_section",
       "section_marker": "RINGKASAN AKAUN",
       "required": false
     },
     "total_credit": {
-      "keywords": ["TOTAL CREDIT"],
+      "keywords": [
+        "TOTAL CREDIT"
+      ],
       "pattern": "[\\d,\\.]+",
       "position": "summary_section",
       "section_marker": "RINGKASAN AKAUN",
       "required": false
     },
     "statement_period_from": {
-      "keywords": ["From", "Dari"],
+      "keywords": [
+        "From",
+        "Dari"
+      ],
       "pattern": "\\d{2}/\\d{2}/\\d{2}",
       "required": false
     },
     "statement_period_to": {
-      "keywords": ["To", "Hingga"],
+      "keywords": [
+        "To",
+        "Hingga"
+      ],
       "pattern": "\\d{2}/\\d{2}/\\d{2}",
       "required": false
     }
   },
   "cimb": {
     "account_number": {
-      "keywords": ["Account No", "No Akaun"],
+      "keywords": [
+        "Account No",
+        "No Akaun"
+      ],
       "pattern": "\\d{2}-\\d{7}-\\d{1}",
       "position": "transaction_section",
       "required": true
@@ -182,19 +280,27 @@
       "required": true
     },
     "statement_date": {
-      "keywords": ["Statement Date", "Tarikh Penyata"],
+      "keywords": [
+        "Statement Date",
+        "Tarikh Penyata"
+      ],
       "pattern": "\\d{2}/\\d{2}/\\d{4}",
       "format": "DD/MM/YYYY",
       "required": true
     },
     "opening_balance": {
-      "keywords": ["OPENING BALANCE"],
+      "keywords": [
+        "OPENING BALANCE"
+      ],
       "pattern": "[\\d,\\.]+",
       "position": "transaction_section",
       "required": true
     },
     "closing_balance": {
-      "keywords": ["CLOSING BALANCE", "BAKI PENUTUP"],
+      "keywords": [
+        "CLOSING BALANCE",
+        "BAKI PENUTUP"
+      ],
       "pattern": "[\\d,\\.]+",
       "position": "transaction_section",
       "required": true
@@ -210,12 +316,18 @@
       "required": false
     },
     "statement_period_from": {
-      "keywords": ["From", "Dari"],
+      "keywords": [
+        "From",
+        "Dari"
+      ],
       "pattern": "\\d{2}/\\d{2}/\\d{4}",
       "required": false
     },
     "statement_period_to": {
-      "keywords": ["To", "Hingga"],
+      "keywords": [
+        "To",
+        "Hingga"
+      ],
       "pattern": "\\d{2}/\\d{2}/\\d{4}",
       "required": false
     }

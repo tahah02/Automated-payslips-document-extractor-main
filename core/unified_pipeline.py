@@ -16,28 +16,17 @@ logger = logging.getLogger(__name__)
 
 
 class UnifiedExtractionPipeline:
-    """
-    Unified pipeline that automatically detects document type and routes to
-    the appropriate extractor (bank statement or payslip).
-    """
+    
     
     def __init__(self, ocr_engine: str = "paddleocr", ocr_language: str = "en"):
-        """
-        Initialize the unified pipeline.
         
-        Args:
-            ocr_engine: OCR engine to use (paddleocr, easyocr, tesseract)
-            ocr_language: Language for OCR (en, ms, etc.)
-        """
         self.classifier = DocumentClassifier()
         self.pdfplumber_engine = PDFPlumberEngine()
         self.text_cleaner = TextCleaner()
         
-        # Initialize extractors
         self.bank_extractor = FieldExtractor()
         self.payslip_extractor = PayslipExtractor()
         
-        # OCR engine (lazy loaded when needed)
         self.ocr_engine_name = ocr_engine
         self.ocr_language = ocr_language
         self.ocr_engine = None
@@ -45,20 +34,10 @@ class UnifiedExtractionPipeline:
         logger.info(f"Unified pipeline initialized (OCR: {ocr_engine}, Language: {ocr_language})")
     
     def process(self, upload_id: str, file_path: str) -> Dict[str, Any]:
-        """
-        Process a document (auto-detect type and extract fields).
         
-        Args:
-            upload_id: Unique identifier for this upload
-            file_path: Path to the PDF file
-            
-        Returns:
-            Dictionary containing extraction results
-        """
         try:
             logger.info(f"Starting unified processing for {upload_id}")
             
-            # Step 1: Check if digital PDF (can use PDFPlumber)
             use_pdfplumber = self.pdfplumber_engine.can_extract_text(file_path)
             
             if use_pdfplumber:
@@ -73,25 +52,20 @@ class UnifiedExtractionPipeline:
             raise
     
     def _process_with_pdfplumber(self, upload_id: str, file_path: str) -> Dict[str, Any]:
-        """Process digital PDF using PDFPlumber."""
+        
         try:
-            # Extract text and tokens
             full_text, tokens = self.pdfplumber_engine.extract_text_from_pdf(file_path)
             full_text = self.text_cleaner.clean_text(full_text)
             
             logger.info(f"Extracted {len(full_text)} characters using PDFPlumber")
             
-            # Step 2: Classify document type
             doc_type, classification_confidence = self.classifier.classify(full_text)
             logger.info(f"Document classified as: {doc_type} (confidence: {classification_confidence})")
             
-            # Step 3: Route to appropriate extractor
             if doc_type == "payslip":
-                # Open with PDFPlumber to get page object for spatial extraction
                 import pdfplumber
                 with pdfplumber.open(file_path) as pdf:
                     page = pdf.pages[0] if len(pdf.pages) > 0 else None
-                    # Extract with spatial extraction
                     extracted_data = self.payslip_extractor.extract_payslip_fields(full_text, tokens=tokens, page=page)
                     confidence = self.payslip_extractor.calculate_confidence(extracted_data)
             elif doc_type == "bank_statement":
@@ -102,7 +76,6 @@ class UnifiedExtractionPipeline:
             
             logger.info(f"Extraction confidence: {confidence}")
             
-            # Step 4: Build result
             result = {
                 "upload_id": upload_id,
                 "file_type": "pdf",
@@ -135,28 +108,24 @@ class UnifiedExtractionPipeline:
             raise
     
     def _process_with_ocr(self, upload_id: str, file_path: str) -> Dict[str, Any]:
-        """Process scanned PDF using OCR."""
+        
         try:
-            # Lazy load OCR engine
             if self.ocr_engine is None:
                 self.ocr_engine = get_ocr_engine(self.ocr_engine_name, self.ocr_language)
             
-            # Convert PDF to images
             processed_dir = f"uploads/processed/{upload_id}"
             Path(processed_dir).mkdir(parents=True, exist_ok=True)
             
-            images = PDFProcessor.pdf_to_images(file_path, processed_dir)
+            images = PDFProcessor.pdf_to_images(file_path, processed_dir, dpi=300, zoom=3.0)
             logger.info(f"Converted {len(images)} pages to images")
             
             documents = []
             total_text_length = 0
             confidence_scores = []
             
-            # Process each page
             for doc_num, image_path in enumerate(images, 1):
                 logger.info(f"Processing page {doc_num}/{len(images)}")
                 
-                # Extract text using OCR
                 text = self.ocr_engine.extract_text(image_path)
                 tokens = self.ocr_engine.extract_tokens(image_path, page=doc_num-1)
                 text = self.text_cleaner.clean_text(text)
@@ -164,12 +133,10 @@ class UnifiedExtractionPipeline:
                 total_text_length += len(text)
                 logger.info(f"Extracted {len(text)} characters from page {doc_num}")
                 
-                # Classify document type (use first page for classification)
                 if doc_num == 1:
                     doc_type, classification_confidence = self.classifier.classify(text)
                     logger.info(f"Document classified as: {doc_type} (confidence: {classification_confidence})")
                 
-                # Route to appropriate extractor
                 if doc_type == "bank_statement":
                     extracted_data = self.bank_extractor.extract_bank_statement_fields(text, tokens)
                     confidence = self.bank_extractor.calculate_confidence(extracted_data)
@@ -189,10 +156,8 @@ class UnifiedExtractionPipeline:
                     "text_length": len(text)
                 })
             
-            # Calculate average confidence
             avg_confidence = sum(confidence_scores) / len(confidence_scores) if confidence_scores else 0.0
             
-            # Build result
             result = {
                 "upload_id": upload_id,
                 "file_type": "pdf",
@@ -219,13 +184,7 @@ class UnifiedExtractionPipeline:
             raise
     
     def save_result(self, upload_id: str, result: Dict[str, Any]):
-        """
-        Save extraction result to JSON file.
         
-        Args:
-            upload_id: Unique identifier for this upload
-            result: Extraction result dictionary
-        """
         try:
             output_dir = Path("output/json")
             output_dir.mkdir(parents=True, exist_ok=True)

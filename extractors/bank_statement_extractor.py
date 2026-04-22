@@ -24,7 +24,6 @@ class FieldExtractor:
         self.text_constraints = get_text_constraints_config(template)
         self.used_tokens: Set[str] = set()
         
-        # Cache for multi-page statements
         self.cached_opening_balance = None
         self.cached_total_debit = None
         self.cached_total_credit = None
@@ -59,26 +58,21 @@ class FieldExtractor:
             month = int(parts[1])
             year = int(parts[2])
             
-            # Validate day
             if day < 1 or day > 31:
                 logger.warning(f"Invalid day in date: {date_str} (day={day})")
                 return None
             
-            # Validate month
             if month < 1 or month > 12:
                 logger.warning(f"Invalid month in date: {date_str} (month={month})")
                 return None
             
-            # Handle 2-digit years
             if year < 100:
                 year += 2000
             
-            # Validate year range (2000-2099)
             if year < 2000 or year > 2099:
                 logger.warning(f"Invalid year in date: {date_str} (year={year})")
                 return None
             
-            # Validate day for specific months
             if month in [4, 6, 9, 11] and day > 30:
                 logger.warning(f"Invalid day for month in date: {date_str}")
                 return None
@@ -95,32 +89,25 @@ class FieldExtractor:
             return None
     
     def _validate_and_fix_date(self, date_str: str) -> Optional[str]:
-        """Validate date and attempt to fix common OCR errors"""
         if not date_str:
             return None
         
-        # First try standard validation
         validated = self._validate_date(date_str)
         if validated:
             return validated
         
-        # Try to fix common OCR errors
         logger.info(f"Attempting to fix invalid date: {date_str}")
         
         try:
-            # Replace common OCR character mistakes
             fixed = date_str.replace('O', '0').replace('l', '1').replace('I', '1')
             fixed = fixed.replace('S', '5').replace('Z', '2').replace('B', '8')
             
-            # Try validation again
             validated = self._validate_date(fixed)
             if validated:
                 logger.info(f"Fixed date: {date_str} → {fixed}")
                 return validated
             
-            # Try to extract date pattern from garbled text
             import re
-            # Look for any DD/MM/YYYY pattern
             match = re.search(r'(\d{1,2})/(\d{1,2})/(\d{2,4})', fixed)
             if match:
                 day, month, year = match.groups()
@@ -128,7 +115,6 @@ class FieldExtractor:
                 month = int(month)
                 year = int(year)
                 
-                # Clamp invalid values to valid ranges
                 day = max(1, min(31, day))
                 month = max(1, min(12, month))
                 if year < 100:
@@ -155,15 +141,12 @@ class FieldExtractor:
         extracted['detected_bank'] = bank_type
         extracted['bank_detection_confidence'] = confidence
         
-        # For Bank Islam multi-page statements, cache opening/debit/credit from first page
         if bank_type == 'bank_islam':
-            # If opening balance is valid (not 0.00), cache it
             if extracted.get('opening_balance') and float(extracted['opening_balance']) > 0:
                 self.cached_opening_balance = extracted['opening_balance']
                 self.cached_total_debit = extracted.get('total_debit')
                 self.cached_total_credit = extracted.get('total_credit')
                 logger.info(f"Bank Islam: Cached opening balance: {self.cached_opening_balance}")
-            # If opening balance is 0.00 but we have cached value, use it
             elif extracted.get('opening_balance') == '0.00' and self.cached_opening_balance:
                 extracted['opening_balance'] = self.cached_opening_balance
                 if self.cached_total_debit:
@@ -172,7 +155,6 @@ class FieldExtractor:
                     extracted['total_credit'] = self.cached_total_credit
                 logger.info(f"Bank Islam: Using cached opening balance: {self.cached_opening_balance}")
             
-            # Also cache debit/credit if they are valid (not None)
             if extracted.get('total_debit') and extracted['total_debit'] != 'None':
                 self.cached_total_debit = extracted['total_debit']
             if extracted.get('total_credit') and extracted['total_credit'] != 'None':
@@ -238,10 +220,8 @@ class FieldExtractor:
         extracted['statement_period_from'] = self._extract_period_from(text, bank_type, bank_config, extracted.get('statement_date'))
         extracted['statement_period_to'] = self._extract_period_to(text, bank_type, bank_config, extracted.get('statement_date'))
         
-        # STEP 3 FIX: Handle bank-specific optional fields
         if bank_type == 'cimb':
             # CIMB statements don't have summary section with total debit/credit
-            # This is a format limitation, not an extraction bug
             if not extracted.get('total_debit'):
                 extracted['total_debit'] = None
                 logger.info("CIMB: total_debit not available in format (expected)")
@@ -308,7 +288,6 @@ class FieldExtractor:
         field_config = config.get('account_holder_name', {})
         pattern = field_config.get('pattern')
         
-        # Try bank-specific pattern from config first
         if pattern:
             match = re.search(pattern, text, re.IGNORECASE)
             if match:
@@ -317,9 +296,7 @@ class FieldExtractor:
                 logger.info(f"Extracted account holder via config pattern: {cleaned_name}")
                 return cleaned_name
         
-        # Bank-specific extraction logic
         if bank_type == 'public_islamic':
-            # Pattern 1: Name before 3-digit code and account number
             match = re.search(r'((?:MOHAMAD|ENCIK|PUAN|CIKGU|TN|TUAN|DATO)\s+[A-Z\s]+?(?:BIN|BINTI|ANAK)?\s+[A-Z\s]+?)(?=\s+\d{3}\s+\d{10})', text, re.IGNORECASE)
             if match:
                 cleaned_name = ' '.join(match.group(1).upper().split())
@@ -334,7 +311,6 @@ class FieldExtractor:
                 return cleaned_name
         
         elif bank_type == 'cimb':
-            # CIMB: Name before address
             match = re.search(r'([A-Z][A-Za-z]+\s+[A-Z][A-Za-z]+\s+(?:BINTI|BIN)\s+[A-Z][A-Za-z]+)(?=\s+\d+,?\s+(?:JALAN|LOT|NO\.))', text, re.IGNORECASE)
             if match:
                 cleaned_name = ' '.join(match.group(1).upper().split())
@@ -350,14 +326,12 @@ class FieldExtractor:
                 return cleaned_name
         
         elif bank_type == 'bank_islam':
-            # Bank Islam: Name before TARIKH
             match = re.search(r'((?:ENCIK|PUAN|CIKGU)\s+[A-Z\s]+?)(?=\s+TARIKH)', text, re.IGNORECASE)
             if match:
                 cleaned_name = ' '.join(match.group(1).upper().split())
                 logger.info(f"Extracted Bank Islam account holder: {cleaned_name}")
                 return cleaned_name
         
-        # Generic fallback patterns
         match = re.search(r'((?:ENCIK|PUAN|CIKGU)\s+[A-Z\s]+?)(?=\s+(?:TARIKH|STATEMENT|DATE|JALAN|LOT|NO\.|NOMBOR))', text, re.IGNORECASE)
         if match:
             cleaned_name = ' '.join(match.group(1).upper().split())
@@ -395,7 +369,6 @@ class FieldExtractor:
                 logger.info(f"Extracted Public Islamic statement date (DD Month YYYY): {formatted_date}")
                 return formatted_date
         
-        # Try with keywords first
         for keyword in keywords:
             if pattern:
                 match = re.search(rf'{keyword}[:\s]*({pattern})', text, re.IGNORECASE)
@@ -406,7 +379,6 @@ class FieldExtractor:
                         logger.info(f"Extracted statement date via keyword '{keyword}': {validated}")
                         return validated
         
-        # Fallback: search for date pattern directly near top of document
         if pattern:
             top_text = text[:500]
             matches = re.finditer(pattern, top_text)
@@ -440,14 +412,12 @@ class FieldExtractor:
         if bank_type == 'bsn' and position == 'summary_section':
             return self._extract_available_balance_bsn(text)
         
-        # Bank Islam specific: Calculate from Opening + Credit - Debit
         if bank_type == 'bank_islam':
             logger.info("Bank Islam: Calculating closing balance from Opening + Credit - Debit")
             opening = self._extract_opening_balance(text, bank_type, config)
             credit = self._extract_total_credit(text, bank_type, config)
             debit = self._extract_total_debit(text, bank_type, config)
             
-            # Use cached values if current extraction is None
             if not opening and self.cached_opening_balance:
                 opening = self.cached_opening_balance
                 logger.info(f"Bank Islam: Using cached opening balance: {opening}")
@@ -655,7 +625,6 @@ class FieldExtractor:
             }
             
             # STEP 1 FIX: For CIMB, look for dates AFTER "Transaction Details" section
-            # This prevents extracting dates from bonus points or other sections
             transaction_text = text
             if "Transaction Details" in text or "Butir-butir Transaksi" in text:
                 if "Transaction Details" in text:
@@ -676,7 +645,6 @@ class FieldExtractor:
                 logger.info(f"Extracted first transaction date (BSN format): {result}")
                 return result
             
-            # Standard format: DD/MM/YYYY or D/MM/YYYY
             standard_dates = re.findall(r'(\d{1,2}/\d{2}/\d{2,4})', transaction_text)
             if standard_dates:
                 for date in standard_dates:
@@ -687,7 +655,6 @@ class FieldExtractor:
                         parts[0] = "0" + parts[0]
                     normalized = f"{parts[0]}/{parts[1]}/{parts[2]}"
                     
-                    # Validate date
                     validated = self._validate_date(normalized)
                     if validated and validated != statement_date:
                         logger.info(f"Extracted first transaction date: {validated}")
@@ -710,10 +677,8 @@ class FieldExtractor:
             }
             
             # STEP 2 FIX: For CIMB, look for dates BEFORE "End of Statement"
-            # For other banks, look before summary section
             search_text = text
             
-            # Check for CIMB end marker
             if "End of Statement" in text or "Penyata Tamat" in text:
                 if "End of Statement" in text:
                     end_idx = text.index("End of Statement")
@@ -739,10 +704,8 @@ class FieldExtractor:
                 logger.info(f"Extracted last transaction date (BSN format): {result}")
                 return result
             
-            # Standard format: DD/MM/YYYY or D/MM/YYYY
             standard_dates = re.findall(r'(\d{1,2}/\d{2}/\d{2,4})', search_text)
             if standard_dates:
-                # Iterate from last to first to find valid date
                 for date in reversed(standard_dates):
                     parts = date.split('/')
                     if len(parts[2]) == 2:

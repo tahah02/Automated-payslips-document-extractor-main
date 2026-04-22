@@ -1,13 +1,9 @@
-#!/usr/bin/env python3
-"""Quick test script for payslip extraction"""
-
 import sys
 sys.path.insert(0, '.')
 
 from extractors.payslip_extractor import PayslipExtractor
 import pdfplumber
 
-# Test text from the actual PDF
 test_text = """No Siri : 01631
 PENYATA GAJI BULANAN
 HAPPY CHINESE NEW YEAR
@@ -37,7 +33,6 @@ print("=" * 60)
 
 extractor = PayslipExtractor()
 
-# Test with PDF file
 pdf_path = "uploads/raw/0a7b77ca-fa92-4565-9a5a-964c2413e254.pdf"
 try:
     with pdfplumber.open(pdf_path) as pdf:
