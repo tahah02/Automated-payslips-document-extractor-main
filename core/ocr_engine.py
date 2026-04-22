@@ -93,8 +93,9 @@ class EasyOCREngine(OCREngine):
     def __init__(self, language: str = "en"):
         try:
             import easyocr
-            self.reader = easyocr.Reader([language])
-            logger.info("EasyOCR initialized successfully")
+            languages = ['ms', 'en'] if language == 'en' else [language, 'en']
+            self.reader = easyocr.Reader(languages)
+            logger.info(f"EasyOCR initialized successfully with languages: {languages}")
         except ImportError:
             logger.error("EasyOCR not installed. Install with: pip install easyocr")
             raise

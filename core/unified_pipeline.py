@@ -7,6 +7,7 @@ from pathlib import Path
 from core.document_classifier import DocumentClassifier
 from core.ocr_engine import get_ocr_engine
 from core.pdfplumber_engine import PDFPlumberEngine
+from core.config import get_config
 from extractors.bank_statement_extractor import FieldExtractor
 from extractors.payslip_extractor import PayslipExtractor
 from utils.pdf_processor import PDFProcessor
@@ -116,8 +117,13 @@ class UnifiedExtractionPipeline:
             processed_dir = f"uploads/processed/{upload_id}"
             Path(processed_dir).mkdir(parents=True, exist_ok=True)
             
-            images = PDFProcessor.pdf_to_images(file_path, processed_dir, dpi=300, zoom=3.0)
-            logger.info(f"Converted {len(images)} pages to images")
+            from core.config import load_json, PREPROCESSING_CONFIG_FILE
+            preprocessing_config = load_json(PREPROCESSING_CONFIG_FILE)
+            dpi = preprocessing_config.get('preprocessing', {}).get('image_conversion', {}).get('dpi', 300)
+            zoom = preprocessing_config.get('preprocessing', {}).get('image_conversion', {}).get('zoom', 3.0)
+            
+            images = PDFProcessor.pdf_to_images(file_path, processed_dir, dpi=dpi, zoom=zoom)
+            logger.info(f"Converted {len(images)} pages to images (DPI: {dpi}, Zoom: {zoom})")
             
             documents = []
             total_text_length = 0
@@ -129,6 +135,10 @@ class UnifiedExtractionPipeline:
                 text = self.ocr_engine.extract_text(image_path)
                 tokens = self.ocr_engine.extract_tokens(image_path, page=doc_num-1)
                 text = self.text_cleaner.clean_text(text)
+                
+                logger.info(f"=== OCR EXTRACTED TEXT (Page {doc_num}) ===")
+                logger.info(f"{text}")
+                logger.info(f"=== END OCR TEXT ===")
                 
                 total_text_length += len(text)
                 logger.info(f"Extracted {len(text)} characters from page {doc_num}")

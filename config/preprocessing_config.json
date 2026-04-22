@@ -8,7 +8,8 @@
     "debug_output_path": "output/debug",
     "image_conversion": {
       "dpi": 300,
-      "max_dpi": 600,
+      "zoom": 3.0,
+      "max_dpi": 300,
       "format": "png",
       "color_mode": "RGB"
     },
