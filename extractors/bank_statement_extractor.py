@@ -318,12 +318,22 @@ class FieldExtractor:
                 return cleaned_name
         
         elif bank_type == 'bsn':
-            # BSN: Name before "No.Akaun"
-            match = re.search(r'([A-Z][A-Z\s]+?(?:BIN|BINTI|ANAK)\s+[A-Z\s]+?)(?=\s+No\.Akaun)', text, re.IGNORECASE)
+            # BSN: Name after "PENYATA AKAUN" and before "No.Akaun" (handle newlines)
+            match = re.search(r'PENYATA AKAUN\s*\n?\s*([A-Z][A-Z\s]+?(?:BIN|BINTI|ANAK)\s+[A-Z\s]+?)(?=\s+No\.Akaun)', text, re.IGNORECASE | re.MULTILINE)
             if match:
                 cleaned_name = ' '.join(match.group(1).upper().split())
                 logger.info(f"Extracted BSN account holder: {cleaned_name}")
                 return cleaned_name
+            
+            # Fallback: Name before "No.Akaun" (excluding PENYATA AKAUN)
+            match = re.search(r'(?<!PENYATA AKAUN\s)([A-Z][A-Z\s]+?(?:BIN|BINTI|ANAK)\s+[A-Z\s]+?)(?=\s+No\.Akaun)', text, re.IGNORECASE)
+            if match:
+                name = match.group(1)
+                # Additional check to exclude "PENYATA AKAUN" if it somehow got included
+                if not name.startswith('PENYATA AKAUN'):
+                    cleaned_name = ' '.join(name.upper().split())
+                    logger.info(f"Extracted BSN account holder (fallback): {cleaned_name}")
+                    return cleaned_name
         
         elif bank_type == 'bank_islam':
             match = re.search(r'((?:ENCIK|PUAN|CIKGU)\s+[A-Z\s]+?)(?=\s+TARIKH)', text, re.IGNORECASE)
@@ -498,14 +508,12 @@ class FieldExtractor:
             summary_match = re.search(r'(?:RINGKASAN|SUMMARY|HIGHLIGHTS)', text, re.IGNORECASE)
             if summary_match:
                 summary_text = text[summary_match.start():summary_match.start()+1000]
-                debit_match = re.search(r'(?:Jumlah Debit|Total Debits)', summary_text, re.IGNORECASE)
+                # Fixed: Extract number AFTER the label, not before
+                debit_match = re.search(r'(?:Jumlah Debit|Total Debits)\s*[^\d]*?([0-9,]+\.?\d*)', summary_text, re.IGNORECASE)
                 if debit_match:
-                    text_before_label = summary_text[:debit_match.start()]
-                    numbers = re.findall(r'(\d{1,3}(?:,\d{3})+\.\d{2})', text_before_label)
-                    if numbers:
-                        value = numbers[-1]
-                        normalized = NumberFormatter.normalize(value, bank_type)
-                        return str(normalized) if normalized else None
+                    value = debit_match.group(1)
+                    normalized = NumberFormatter.normalize(value, bank_type)
+                    return str(normalized) if normalized else None
         
         if section_marker:
             marker_match = re.search(section_marker, text, re.IGNORECASE)
@@ -530,9 +538,10 @@ class FieldExtractor:
             summary_match = re.search(r'(?:RINGKASAN|SUMMARY|HIGHLIGHTS)', text, re.IGNORECASE)
             if summary_match:
                 summary_text = text[summary_match.start():summary_match.start()+1000]
-                match = re.search(r'([0-9,\.]+)\s+[^\d]*?(?:Jumlah Kredit|Total Credits)', summary_text, re.IGNORECASE)
-                if match:
-                    value = match.group(1)
+                # Fixed: Extract number AFTER the label, not before
+                credit_match = re.search(r'(?:Jumlah Kredit|Total Credits)\s*[^\d]*?([0-9,]+\.?\d*)', summary_text, re.IGNORECASE)
+                if credit_match:
+                    value = credit_match.group(1)
                     normalized = NumberFormatter.normalize(value, bank_type)
                     return str(normalized) if normalized else None
         

@@ -32,7 +32,7 @@
         "CAWANGAN",
         "PENYATA AKAUN"
       ],
-      "pattern": "[A-Z][A-Z\\s]+(?=\\s+No\\.Akaun)",
+      "pattern": "PENYATA AKAUN\\s*\\n?\\s*([A-Z][A-Z\\s]+?(?:BIN|BINTI|ANAK)\\s+[A-Z\\s]+?)(?=\\s+No\\.Akaun)",
       "position": "top",
       "required": true
     },
