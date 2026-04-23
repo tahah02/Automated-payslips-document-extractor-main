@@ -15,6 +15,7 @@ BASE_PATH = os.path.join(os.path.dirname(__file__), "..", "config")
 BASE_CONFIG_FILE = os.path.join(BASE_PATH, "pipeline_config.json")
 EXTRACTION_CONFIG_FILE = os.path.join(BASE_PATH, "extraction_config.json")
 OCR_CONFIG_FILE = os.path.join(BASE_PATH, "ocr_config.json")
+PREPROCESSING_CONFIG_FILE = os.path.join(BASE_PATH, "preprocessing_config.json")
 
 _CONFIG_CACHE: Dict[str, Dict[str, Any]] = {}
 

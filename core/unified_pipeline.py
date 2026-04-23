@@ -114,30 +114,50 @@ class UnifiedExtractionPipeline:
             if self.ocr_engine is None:
                 self.ocr_engine = get_ocr_engine(self.ocr_engine_name, self.ocr_language)
             
+            from core.scanned_pdf_optimizer import ScannedPDFOptimizer
+            optimizer = ScannedPDFOptimizer()
+            
             processed_dir = f"uploads/processed/{upload_id}"
             Path(processed_dir).mkdir(parents=True, exist_ok=True)
             
             from core.config import load_json, PREPROCESSING_CONFIG_FILE
             preprocessing_config = load_json(PREPROCESSING_CONFIG_FILE)
-            dpi = preprocessing_config.get('preprocessing', {}).get('image_conversion', {}).get('dpi', 300)
+            
+            # Load DPI and zoom from preprocessing config
+            base_dpi = preprocessing_config.get('preprocessing', {}).get('image_conversion', {}).get('dpi', 300)
             zoom = preprocessing_config.get('preprocessing', {}).get('image_conversion', {}).get('zoom', 3.0)
             
-            images = PDFProcessor.pdf_to_images(file_path, processed_dir, dpi=dpi, zoom=zoom)
-            logger.info(f"Converted {len(images)} pages to images (DPI: {dpi}, Zoom: {zoom})")
+            images = PDFProcessor.pdf_to_images(file_path, processed_dir, dpi=base_dpi, zoom=zoom)
+            logger.info(f"Converted {len(images)} pages to images (DPI: {base_dpi}, Zoom: {zoom})")
             
             documents = []
             total_text_length = 0
             confidence_scores = []
+            doc_type = None
+            classification_confidence = None
             
             for doc_num, image_path in enumerate(images, 1):
                 logger.info(f"Processing page {doc_num}/{len(images)}")
                 
-                text = self.ocr_engine.extract_text(image_path)
-                tokens = self.ocr_engine.extract_tokens(image_path, page=doc_num-1)
+                # Optimize image for better OCR
+                optimized_image = optimizer.optimize_image(image_path, adaptive=True)
+                
+                if optimized_image is not None:
+                    # Save optimized image temporarily
+                    optimized_path = image_path.replace('.png', '_optimized.png')
+                    optimizer.save_optimized_image(optimized_image, optimized_path)
+                    ocr_image_path = optimized_path
+                    logger.info(f"Using optimized image for OCR")
+                else:
+                    ocr_image_path = image_path
+                    logger.warning(f"Optimization failed, using original image")
+                
+                text = self.ocr_engine.extract_text(ocr_image_path)
+                tokens = self.ocr_engine.extract_tokens(ocr_image_path, page=doc_num-1)
                 text = self.text_cleaner.clean_text(text)
                 
                 logger.info(f"=== OCR EXTRACTED TEXT (Page {doc_num}) ===")
-                logger.info(f"{text}")
+                logger.info(f"{text[:500]}...")  # Log first 500 chars only
                 logger.info(f"=== END OCR TEXT ===")
                 
                 total_text_length += len(text)
