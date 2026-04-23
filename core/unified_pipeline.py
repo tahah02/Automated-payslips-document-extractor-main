@@ -7,7 +7,8 @@ from pathlib import Path
 from core.document_classifier import DocumentClassifier
 from core.ocr_engine import get_ocr_engine
 from core.pdfplumber_engine import PDFPlumberEngine
-from core.config import get_config
+from core.config import get_config, load_json
+from core.cache_manager import CacheManager
 from extractors.bank_statement_extractor import FieldExtractor
 from extractors.payslip_extractor import PayslipExtractor
 from utils.pdf_processor import PDFProcessor
@@ -32,6 +33,8 @@ class UnifiedExtractionPipeline:
         self.ocr_language = ocr_language
         self.ocr_engine = None
         
+        self.cache_manager = CacheManager()
+        
         logger.info(f"Unified pipeline initialized (OCR: {ocr_engine}, Language: {ocr_language})")
     
     def process(self, upload_id: str, file_path: str) -> Dict[str, Any]:
@@ -39,14 +42,22 @@ class UnifiedExtractionPipeline:
         try:
             logger.info(f"Starting unified processing for {upload_id}")
             
+            cached_result = self.cache_manager.get_cached_result(file_path)
+            if cached_result:
+                logger.info(f"Returning cached result for {upload_id}")
+                return cached_result
+            
             use_pdfplumber = self.pdfplumber_engine.can_extract_text(file_path)
             
             if use_pdfplumber:
                 logger.info("Digital PDF detected - using PDFPlumber")
-                return self._process_with_pdfplumber(upload_id, file_path)
+                result = self._process_with_pdfplumber(upload_id, file_path)
             else:
                 logger.info("Scanned PDF detected - using OCR")
-                return self._process_with_ocr(upload_id, file_path)
+                result = self._process_with_ocr(upload_id, file_path)
+            
+            self.cache_manager.save_result_to_cache(file_path, result)
+            return result
         
         except Exception as e:
             logger.error(f"Processing error for {upload_id}: {str(e)}")
@@ -120,10 +131,9 @@ class UnifiedExtractionPipeline:
             processed_dir = f"uploads/processed/{upload_id}"
             Path(processed_dir).mkdir(parents=True, exist_ok=True)
             
-            from core.config import load_json, PREPROCESSING_CONFIG_FILE
+            from core.config import PREPROCESSING_CONFIG_FILE
             preprocessing_config = load_json(PREPROCESSING_CONFIG_FILE)
             
-            # Load DPI and zoom from preprocessing config
             base_dpi = preprocessing_config.get('preprocessing', {}).get('image_conversion', {}).get('dpi', 300)
             zoom = preprocessing_config.get('preprocessing', {}).get('image_conversion', {}).get('zoom', 3.0)
             
@@ -139,11 +149,9 @@ class UnifiedExtractionPipeline:
             for doc_num, image_path in enumerate(images, 1):
                 logger.info(f"Processing page {doc_num}/{len(images)}")
                 
-                # Optimize image for better OCR
                 optimized_image = optimizer.optimize_image(image_path, adaptive=True)
                 
                 if optimized_image is not None:
-                    # Save optimized image temporarily
                     optimized_path = image_path.replace('.png', '_optimized.png')
                     optimizer.save_optimized_image(optimized_image, optimized_path)
                     ocr_image_path = optimized_path
@@ -157,7 +165,7 @@ class UnifiedExtractionPipeline:
                 text = self.text_cleaner.clean_text(text)
                 
                 logger.info(f"=== OCR EXTRACTED TEXT (Page {doc_num}) ===")
-                logger.info(f"{text[:500]}...")  # Log first 500 chars only
+                logger.info(f"{text[:500]}...")
                 logger.info(f"=== END OCR TEXT ===")
                 
                 total_text_length += len(text)

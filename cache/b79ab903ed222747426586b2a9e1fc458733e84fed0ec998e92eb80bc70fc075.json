@@ -1,0 +1,32 @@
+{
+  "upload_id": "3c87942b-66f6-49ca-80c9-bd2ee92490cc",
+  "file_type": "pdf",
+  "document_type": "payslip",
+  "classification_confidence": 0.93,
+  "extraction_method": "pdfplumber",
+  "total_documents": 1,
+  "documents": [
+    {
+      "document_number": 1,
+      "document_type": "payslip",
+      "extracted_data": {
+        "name": "Fatim Nor Mohsein bin Nordin",
+        "id_number": "720613-08-5269",
+        "gross_income": "50000.00",
+        "total_deduction": "15399.00",
+        "net_income": "34601.00",
+        "month_year": "10 2025"
+      },
+      "confidence_score": 1.0,
+      "text_length": 888
+    }
+  ],
+  "summary": {
+    "payslips": 1,
+    "other": 0,
+    "average_confidence": 1.0
+  },
+  "processing_completed_at": "2026-04-23T06:16:33.708992",
+  "original_file": "raw/3c87942b-66f6-49ca-80c9-bd2ee92490cc.pdf",
+  "total_text_length": 888
+}
