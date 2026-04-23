@@ -221,7 +221,6 @@ class FieldExtractor:
         extracted['statement_period_to'] = self._extract_period_to(text, bank_type, bank_config, extracted.get('statement_date'))
         
         if bank_type == 'cimb':
-            # CIMB statements don't have summary section with total debit/credit
             if not extracted.get('total_debit'):
                 extracted['total_debit'] = None
                 logger.info("CIMB: total_debit not available in format (expected)")
@@ -303,7 +302,6 @@ class FieldExtractor:
                 logger.info(f"Extracted Public Islamic account holder: {cleaned_name}")
                 return cleaned_name
             
-            # Pattern 2: Name before "PENYATA AKAUN"
             match = re.search(r'((?:MOHAMAD|ENCIK|PUAN|CIKGU)\s+[A-Z\s]+?(?:BIN|BINTI|ANAK)\s+[A-Z\s]+?)(?=\s+(?:PENYATA AKAUN|STATEMENT OF ACCOUNT))', text, re.IGNORECASE)
             if match:
                 cleaned_name = ' '.join(match.group(1).upper().split())
@@ -318,18 +316,15 @@ class FieldExtractor:
                 return cleaned_name
         
         elif bank_type == 'bsn':
-            # BSN: Name after "PENYATA AKAUN" and before "No.Akaun" (handle newlines)
             match = re.search(r'PENYATA AKAUN\s*\n?\s*([A-Z][A-Z\s]+?(?:BIN|BINTI|ANAK)\s+[A-Z\s]+?)(?=\s+No\.Akaun)', text, re.IGNORECASE | re.MULTILINE)
             if match:
                 cleaned_name = ' '.join(match.group(1).upper().split())
                 logger.info(f"Extracted BSN account holder: {cleaned_name}")
                 return cleaned_name
             
-            # Fallback: Name before "No.Akaun" (excluding PENYATA AKAUN)
             match = re.search(r'(?<!PENYATA AKAUN\s)([A-Z][A-Z\s]+?(?:BIN|BINTI|ANAK)\s+[A-Z\s]+?)(?=\s+No\.Akaun)', text, re.IGNORECASE)
             if match:
                 name = match.group(1)
-                # Additional check to exclude "PENYATA AKAUN" if it somehow got included
                 if not name.startswith('PENYATA AKAUN'):
                     cleaned_name = ' '.join(name.upper().split())
                     logger.info(f"Extracted BSN account holder (fallback): {cleaned_name}")
@@ -362,9 +357,7 @@ class FieldExtractor:
         keywords = field_config.get('keywords', [])
         pattern = field_config.get('pattern')
         
-        # Public Islamic specific formats - handle both "DD Month YYYY" and "YYYY Month DD"
         if bank_type == 'public_islamic':
-            # Try "YYYY Month DD" format (e.g., "2025 May 20")
             match = re.search(r'(\d{4})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})', text, re.IGNORECASE)
             if match:
                 year, month, day = match.group(1), match.group(2), match.group(3)
@@ -372,7 +365,6 @@ class FieldExtractor:
                 logger.info(f"Extracted Public Islamic statement date (YYYY Month DD): {formatted_date}")
                 return formatted_date
             
-            # Try "DD Month YYYY" format (e.g., "20 May 2025")
             match = re.search(r'(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})', text, re.IGNORECASE)
             if match:
                 formatted_date = match.group(0).strip()
@@ -508,7 +500,6 @@ class FieldExtractor:
             summary_match = re.search(r'(?:RINGKASAN|SUMMARY|HIGHLIGHTS)', text, re.IGNORECASE)
             if summary_match:
                 summary_text = text[summary_match.start():summary_match.start()+1000]
-                # Fixed: Extract number AFTER the label, not before
                 debit_match = re.search(r'(?:Jumlah Debit|Total Debits)\s*[^\d]*?([0-9,]+\.?\d*)', summary_text, re.IGNORECASE)
                 if debit_match:
                     value = debit_match.group(1)
@@ -538,7 +529,6 @@ class FieldExtractor:
             summary_match = re.search(r'(?:RINGKASAN|SUMMARY|HIGHLIGHTS)', text, re.IGNORECASE)
             if summary_match:
                 summary_text = text[summary_match.start():summary_match.start()+1000]
-                # Fixed: Extract number AFTER the label, not before
                 credit_match = re.search(r'(?:Jumlah Kredit|Total Credits)\s*[^\d]*?([0-9,]+\.?\d*)', summary_text, re.IGNORECASE)
                 if credit_match:
                     value = credit_match.group(1)
@@ -633,7 +623,6 @@ class FieldExtractor:
                 "SEP": "09", "OCT": "10", "NOV": "11", "DEC": "12"
             }
             
-            # STEP 1 FIX: For CIMB, look for dates AFTER "Transaction Details" section
             transaction_text = text
             if "Transaction Details" in text or "Butir-butir Transaksi" in text:
                 if "Transaction Details" in text:
@@ -646,7 +635,6 @@ class FieldExtractor:
                 transaction_text = text[start_idx:]
                 logger.debug(f"Searching for dates in transaction section (length: {len(transaction_text)})")
             
-            # BSN format: DDMON (e.g., "01JAN")
             bsn_dates = re.findall(r'(\d{2})(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)', transaction_text)
             if bsn_dates:
                 day, month = bsn_dates[0]
@@ -685,7 +673,6 @@ class FieldExtractor:
                 "SEP": "09", "OCT": "10", "NOV": "11", "DEC": "12"
             }
             
-            # STEP 2 FIX: For CIMB, look for dates BEFORE "End of Statement"
             search_text = text
             
             if "End of Statement" in text or "Penyata Tamat" in text:
@@ -697,7 +684,6 @@ class FieldExtractor:
                     logger.info("Found 'Penyata Tamat' marker for last date extraction")
                 
                 search_text = text[:end_idx]
-            # Check for other banks' summary markers
             elif re.search(r'(?:Baki Sedia Ada|Available Balance|RINGKASAN|SUMMARY)', text, re.IGNORECASE):
                 summary_match = re.search(r'(?:Baki Sedia Ada|Available Balance|RINGKASAN|SUMMARY)', text, re.IGNORECASE)
                 search_text = text[:summary_match.start()]
@@ -705,7 +691,6 @@ class FieldExtractor:
             
             logger.debug(f"Searching for last date in text (length: {len(search_text)})")
             
-            # BSN format: DDMON (e.g., "25AUG")
             bsn_dates = re.findall(r'(\d{2})(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)', search_text)
             if bsn_dates:
                 day, month = bsn_dates[-1]
@@ -723,7 +708,6 @@ class FieldExtractor:
                         parts[0] = "0" + parts[0]
                     normalized = f"{parts[0]}/{parts[1]}/{parts[2]}"
                     
-                    # Validate date and ensure it's not the statement date
                     validated = self._validate_date(normalized)
                     if validated and validated != statement_date:
                         logger.info(f"Extracted last transaction date: {validated}")

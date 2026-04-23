@@ -1,5 +1,5 @@
 {
-  "upload_id": "4e75cf4a-9799-4c5c-a5f1-569a97829d40",
+  "upload_id": "58a84087-c9b3-4045-90f5-dd4f38fe0853",
   "file_type": "pdf",
   "document_type": "payslip",
   "classification_confidence": 1.0,
@@ -26,7 +26,7 @@
     "other": 0,
     "average_confidence": 1.0
   },
-  "processing_completed_at": "2026-04-23T06:15:56.871316",
-  "original_file": "raw/4e75cf4a-9799-4c5c-a5f1-569a97829d40.pdf",
+  "processing_completed_at": "2026-04-23T16:11:09.228524",
+  "original_file": "raw/58a84087-c9b3-4045-90f5-dd4f38fe0853.pdf",
   "total_text_length": 610
 }

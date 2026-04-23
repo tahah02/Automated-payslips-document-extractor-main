@@ -105,7 +105,6 @@ class PayslipExtractor:
                 logger.warning(f"Could not calculate net_income: {str(e)}")
                 extracted["net_income"] = net_income_cleaned
         
-        # FIX: Validate and recalculate if math doesn't match
         try:
             gross = float(extracted["gross_income"])
             net = float(extracted["net_income"])
@@ -113,8 +112,6 @@ class PayslipExtractor:
             
             if gross == 0 and net > 0:
                 logger.warning(f"Gross is 0 but net is {net} - extraction may have failed")
-                # Don't try to calculate deduction from 0 gross
-            # If deduction is negative, it's definitely wrong
             elif deduction < 0:
                 logger.warning(f"Deduction is negative ({deduction}) - recalculating")
                 if gross > 0 and net > 0:
@@ -122,7 +119,6 @@ class PayslipExtractor:
                     if calculated_deduction >= 0:
                         extracted["total_deduction"] = f"{calculated_deduction:.2f}"
                         logger.info(f"Fixed deduction: {gross} - {net} = {calculated_deduction}")
-            # If math doesn't match (tolerance 1.0), recalculate deduction
             elif gross > 0 and net > 0 and abs((gross - deduction) - net) > 1.0:
                 calculated_deduction = gross - net
                 logger.info(f"Math mismatch - recalculating deduction: {gross} - {net} = {calculated_deduction} (was {deduction})")
@@ -250,35 +246,27 @@ class PayslipExtractor:
         fallback_patterns = field_config.get("fallback_patterns", [])
         exclusion_keywords = field_config.get("exclusion_keywords", [])
         
-        # Special handling for ID number - look for 12-digit or 6-2-4 format
         if field_name == "id_number":
-            # Join lines to handle multi-line IDs
             combined_text = ' '.join(text.split('\n'))
             
-            # First try to find any 12-digit number or 6-2-4 format
             id_patterns = [
-                r'(?:No|Ne)[-\s]?(?:K/?P|KP|IC)?[-\s]?(\d{6})[-\s]?(\d{2})[-\s]?(\d{4})',  # No. K/P: 680414-01-5125
-                r'(?:No|Ne)[-\s]?(?:K/?P|KP|IC)?[-\s]?(\d{2})[-\s]?(\d{4})',  # No. K/P: 01-5125 (partial)
-                r'(\d{6})[-\s]?(\d{2})[-\s]?(\d{4})',  # 6-2-4 format
-                r'(\d{12})',  # 12 digits
+                r'(?:No|Ne)[-\s]?(?:K/?P|KP|IC)?[-\s]?(\d{6})[-\s]?(\d{2})[-\s]?(\d{4})',
+                r'(?:No|Ne)[-\s]?(?:K/?P|KP|IC)?[-\s]?(\d{2})[-\s]?(\d{4})',
+                r'(\d{6})[-\s]?(\d{2})[-\s]?(\d{4})',
+                r'(\d{12})',
             ]
             
             for id_pattern in id_patterns:
                 matches = re.finditer(id_pattern, combined_text, re.IGNORECASE)
                 for match in matches:
                     try:
-                        # Handle different group counts
                         groups = match.groups()
                         
                         if len(groups) == 3 and groups[0] and len(groups[0]) == 6:
-                            # 6-2-4 format
                             id_str = f"{groups[0]}-{groups[1]}-{groups[2]}"
                         elif len(groups) == 2 and groups[0] and len(groups[0]) == 2:
-                            # 2-4 format (partial ID like 01-5125)
-                            # Try to find the 6-digit prefix before it
                             id_str = f"680414-{groups[0]}-{groups[1]}"
                         elif len(groups) == 1 and groups[0]:
-                            # 12 digits
                             id_str = groups[0]
                             if len(id_str) == 12:
                                 id_str = f"{id_str[:6]}-{id_str[6:8]}-{id_str[8:]}"
@@ -322,13 +310,10 @@ class PayslipExtractor:
                     if field_name == "month_year":
                         result = self._format_month_year(result, text)
                     
-                    # For name, validate it looks reasonable (not too short, not too long)
                     if field_name == "name":
-                        # Check length
                         if len(result) < 10 or len(result) > 100 or '\n' in result:
                             logger.debug(f"Name result looks invalid: {repr(result)}, skipping")
                             continue
-                        # Check for single letters at the end (OCR noise)
                         words = result.split()
                         if words and len(words[-1]) == 1:
                             logger.debug(f"Name has single letter at end: {repr(result)}, skipping")
@@ -352,7 +337,6 @@ class PayslipExtractor:
                     if field_name == "month_year":
                         result = self._format_month_year(result, text)
                     
-                    # For name, validate it looks reasonable
                     if field_name == "name":
                         if len(result) < 10 or len(result) > 100 or '\n' in result:
                             logger.debug(f"Name result looks invalid: {repr(result)}, skipping")
@@ -379,12 +363,10 @@ class PayslipExtractor:
                         logger.debug(f"Rejected {field_name} due to exclusion: {result}")
                         continue
                 
-                # For name, validate it looks reasonable
                 if field_name == "name":
                     if len(result) < 10 or len(result) > 100 or '\n' in result:
                         logger.debug(f"Name result from fallback looks invalid: {repr(result)}, skipping")
                         continue
-                    # Check for single letters at the end (OCR noise)
                     words = result.split()
                     if words and len(words[-1]) == 1:
                         logger.debug(f"Name has single letter at end: {repr(result)}, skipping")
@@ -394,7 +376,6 @@ class PayslipExtractor:
                     result = self._format_month_year(result, text)
                 return result
         
-        # Fallback for name extraction - use special method for multi-line names
         if field_name == "name":
             name_result = self._extract_name_from_text(text)
             if name_result:
@@ -403,28 +384,22 @@ class PayslipExtractor:
         return None
     
     def _extract_name_from_text(self, text: str) -> Optional[str]:
-        lines = text.split('\n')[:15]  # Check first 15 lines
+        lines = text.split('\n')[:15]
         
-        # Join lines to handle multi-line names
         combined_text = ' '.join(lines)
         
-        # Look for pattern: Name Bin/Binti Name (with fuzzy matching for OCR errors)
-        # Try to find "bin" or "binti" keyword
         bin_match = re.search(r'([\w\s]+?)\s+(?:bin|binti)\s+([\w\s]+?)(?=\s+(?:no|ne|g|10|dabatan|jabatan)|$)', combined_text, re.IGNORECASE)
         
         if bin_match:
             first_part = bin_match.group(1).strip()
             second_part = bin_match.group(2).strip()
             
-            # Clean up - remove extra words and numbers
             first_words = [w for w in first_part.split() if w.isalpha()][:3]
             second_words = [w for w in second_part.split() if w.isalpha()][:2]
             
-            # Remove "Nana" or "Nama" (OCR errors) from the beginning
             if first_words and first_words[0].lower() in ['nana', 'nama', 'ne']:
                 first_words = first_words[1:]
             
-            # Remove single letters at the end (OCR noise like "G", "Ne")
             if second_words and len(second_words[-1]) == 1:
                 second_words = second_words[:-1]
             
@@ -510,7 +485,6 @@ class PayslipExtractor:
             if year_match:
                 year = year_match.group(1)
                 
-                # If first number is 1-12, it's likely the month
                 if 1 <= int(potential_month) <= 12:
                     month = potential_month.zfill(2)
                     return f"{month}/{year}"
@@ -614,12 +588,10 @@ class PayslipExtractor:
                 logger.info(f"SUCCESS: Extracted {field_name}: {value_str} using pattern {i+1}")
                 return value_str
         
-        # For net_income, don't use proximity extraction - calculate from gross - deduction instead
         if field_name == "net_income":
             logger.info(f"Net income not found via regex - will calculate from gross - deduction")
             return None
         
-        # Fallback: Try proximity-based extraction for other fields
         logger.info(f"Regex patterns failed, trying proximity-based extraction for {field_name}")
         proximity_result = self._extract_by_proximity_scanned(text, field_name)
         if proximity_result:
@@ -648,18 +620,15 @@ class PayslipExtractor:
         for line_idx, line in enumerate(lines):
             line_lower = line.lower()
             
-            # Check if any keyword is in this line (with fuzzy matching for OCR errors)
             for keyword in keywords:
                 keyword_lower = keyword.lower()
                 
-                # Exact match
                 if keyword_lower in line_lower:
                     logger.debug(f"Found keyword '{keyword}' in line: {line}")
                     result = self._extract_number_from_nearby_lines(lines, line_idx, field_name)
                     if result:
                         return result
                 
-                # Fuzzy match for OCR errors (check if most characters match)
                 if self._fuzzy_match(keyword_lower, line_lower, threshold=0.6):
                     logger.debug(f"Found fuzzy match for '{keyword}' in line: {line}")
                     result = self._extract_number_from_nearby_lines(lines, line_idx, field_name)
@@ -673,7 +642,6 @@ class PayslipExtractor:
         if len(keyword) < 3:
             return keyword in text
         
-        # Check if at least threshold% of keyword characters appear in order in text
         keyword_chars = list(keyword)
         text_idx = 0
         matched = 0
@@ -690,7 +658,6 @@ class PayslipExtractor:
     
     def _extract_number_from_nearby_lines(self, lines: List[str], keyword_line_idx: int, field_name: str) -> Optional[str]:
         """Extract numeric value from lines near the keyword."""
-        # Look in current line and next 3 lines
         search_range = min(4, len(lines) - keyword_line_idx)
         
         for offset in range(search_range):
@@ -700,15 +667,12 @@ class PayslipExtractor:
             
             line = lines[line_idx]
             
-            # Find all numbers in this line
             import re
             numbers = re.findall(r'[\d\s,\.]+', line)
             
             for num_str in numbers:
-                # Try to parse as currency
                 numeric = self._parse_number(num_str)
                 if numeric and numeric > 0 and numeric < 999999.99:
-                    # Skip very small numbers (likely noise)
                     if numeric < 10 and len(num_str.replace(' ', '').replace(',', '').replace('.', '')) <= 2:
                         logger.debug(f"Skipping small number for {field_name}: {num_str}")
                         continue
@@ -761,64 +725,48 @@ class PayslipExtractor:
             original_value = value
             logger.info(f"Cleaning currency value: '{original_value}'")
             
-            # First, handle spaced numbers like "3,143 57" or "7 702 02" or "400 89"
             if ' ' in value and any(c.isdigit() for c in value):
                 parts = value.strip().split()
                 if len(parts) == 2 and all(any(c.isdigit() for c in part) for part in parts):
-                    # Check if second part looks like cents (1-2 digits)
                     second_part_clean = parts[1].replace(',', '').replace('.', '')
                     if len(second_part_clean) <= 2 and second_part_clean.isdigit():
-                        # Treat as "dollars cents" format
                         dollars = parts[0].replace(',', '').replace('.', '')
                         cents = second_part_clean
                         value = f"{dollars}.{cents.zfill(2)}"
                         logger.info(f"Converted spaced format: '{original_value}' -> '{value}'")
                     else:
-                        # Join all parts
                         value = ''.join(parts)
                         logger.info(f"Joined spaced numbers: '{original_value}' -> '{value}'")
             
             cleaned = value.replace(" ", "").replace("RM", "").strip()
             
-            # Handle multiple commas like "3,143,57" (should be 3143.57)
             if cleaned.count(',') > 1:
-                # Remove all commas except the last one (which might be decimal)
                 parts = cleaned.split(',')
-                # If last part is 1-2 digits, it's likely decimal
                 if len(parts[-1]) <= 2:
                     cleaned = ''.join(parts[:-1]) + '.' + parts[-1]
                 else:
-                    # All commas are thousands separators
                     cleaned = ''.join(parts)
                 logger.info(f"Handled multiple commas: '{original_value}' -> '{cleaned}'")
             elif '.' in cleaned and ',' in cleaned:
-                # Determine which is decimal separator
                 last_dot = cleaned.rfind('.')
                 last_comma = cleaned.rfind(',')
                 
                 if last_dot > last_comma:
-                    # Dot is decimal, remove commas
                     cleaned = cleaned.replace(',', '')
                 else:
-                    # Comma is decimal, remove dots and replace comma with dot
                     cleaned = cleaned.replace('.', '').replace(',', '.')
             elif ',' in cleaned and cleaned.count(',') == 1:
-                # Single comma - check if it's decimal or thousands
                 parts = cleaned.split(',')
                 if len(parts[1]) <= 2:
-                    # Likely decimal
                     cleaned = cleaned.replace(',', '.')
                 else:
-                    # Likely thousands separator
                     cleaned = cleaned.replace(',', '')
             elif '.' in cleaned and cleaned.count('.') > 1:
-                # Multiple dots, remove all but last
                 parts = cleaned.split('.')
                 cleaned = ''.join(parts[:-1]) + '.' + parts[-1]
             
             cleaned = cleaned.replace("-", ".")
             
-            # Handle cases like "314357" where we need to add decimal
             if '.' not in cleaned and len(cleaned) > 2:
                 if len(cleaned) >= 3:
                     cleaned = cleaned[:-2] + '.' + cleaned[-2:]
@@ -833,7 +781,6 @@ class PayslipExtractor:
     
     def calculate_confidence(self, extracted_data: Dict[str, Any]) -> float:
         core_fields = ["gross_income", "net_income", "total_deduction", "month_year"]
-        # Optional fields that add to confidence but aren't required
         optional_fields = ["name", "id_number"]
         
         filled_core = sum(1 for field in core_fields if extracted_data.get(field) and extracted_data.get(field) != "0.00")
