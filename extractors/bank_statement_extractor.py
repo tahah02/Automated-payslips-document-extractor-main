@@ -336,6 +336,16 @@ class FieldExtractor:
                 cleaned_name = ' '.join(match.group(1).upper().split())
                 logger.info(f"Extracted Bank Islam account holder: {cleaned_name}")
                 return cleaned_name
+            
+            match = re.search(r'((?:ENCIK|PUAN|CIKGU)[A-Z]+?(?:BIN|BINTI|ANAK)[A-Z]+)(?=\s+TARIKH)', text, re.IGNORECASE)
+            if match:
+                name_text = match.group(1)
+                name_text = re.sub(r'(BIN|BINTI|ANAK)', r' \1 ', name_text)
+                name_text = re.sub(r'(ENCIK|PUAN|CIKGU)([A-Z])', r'\1 \2', name_text)
+                name_text = re.sub(r'(MUHAMMAD|MOHAMAD|AHMAD|HASSAN|HUSSAIN|ABDUL|IBRAHIM|ISMAIL|KARIM|KHALID|MAHMUD|NASIR|RASHID|SAID|SALIM|SAMIR|TARIQ|WASIM|YASIR|YUSUF|ZAINAL|ZAINUL|ZAKI|ZAMAN|ZUHAIR)([A-Z]{3,})', r'\1 \2', name_text)
+                cleaned_name = ' '.join(name_text.upper().split())
+                logger.info(f"Extracted Bank Islam account holder (concatenated): {cleaned_name}")
+                return cleaned_name
         
         match = re.search(r'((?:ENCIK|PUAN|CIKGU)\s+[A-Z\s]+?)(?=\s+(?:TARIKH|STATEMENT|DATE|JALAN|LOT|NO\.|NOMBOR))', text, re.IGNORECASE)
         if match:
@@ -397,6 +407,14 @@ class FieldExtractor:
         field_config = config.get('opening_balance', {})
         keywords = field_config.get('keywords', [])
         
+        if bank_type == 'bank_islam':
+            match = re.search(r'(?:BAL\s+B/F|BAL\s+BIF|BALB/F)\s+([0-9,\.]+)', text, re.IGNORECASE)
+            if match:
+                value = match.group(1)
+                normalized = NumberFormatter.normalize(value, bank_type)
+                logger.info(f"Bank Islam opening balance: {value} -> {normalized}")
+                return str(normalized) if normalized else None
+        
         for keyword in keywords:
             match = re.search(rf'{keyword}[:\s]*(?:RM)?[:\s]*([0-9,\.]+)', text, re.IGNORECASE)
             if match:
@@ -415,33 +433,11 @@ class FieldExtractor:
             return self._extract_available_balance_bsn(text)
         
         if bank_type == 'bank_islam':
-            logger.info("Bank Islam: Calculating closing balance from Opening + Credit - Debit")
-            opening = self._extract_opening_balance(text, bank_type, config)
-            credit = self._extract_total_credit(text, bank_type, config)
-            debit = self._extract_total_debit(text, bank_type, config)
-            
-            if not opening and self.cached_opening_balance:
-                opening = self.cached_opening_balance
-                logger.info(f"Bank Islam: Using cached opening balance: {opening}")
-            if not credit and self.cached_total_credit:
-                credit = self.cached_total_credit
-                logger.info(f"Bank Islam: Using cached total credit: {credit}")
-            if not debit and self.cached_total_debit:
-                debit = self.cached_total_debit
-                logger.info(f"Bank Islam: Using cached total debit: {debit}")
-            
-            if opening and credit and debit:
-                try:
-                    opening_val = float(opening.replace(',', ''))
-                    credit_val = float(credit.replace(',', ''))
-                    debit_val = float(debit.replace(',', ''))
-                    
-                    closing_val = opening_val + credit_val - debit_val
-                    result = f"{closing_val:.2f}"
-                    logger.info(f"Bank Islam closing balance calculated: {opening} + {credit} - {debit} = {result}")
-                    return result
-                except Exception as e:
-                    logger.warning(f"Bank Islam closing balance calculation failed: {str(e)}")
+            balance_lines = re.findall(r'\d{1,2}/\d{2}/\d{2}\s+\d+\S+\s+[\d,\.]+\s+([\d,\.]+)', text)
+            if balance_lines:
+                last_balance = balance_lines[-1]
+                logger.info(f"Bank Islam closing balance (last transaction): {last_balance}")
+                return last_balance
         
         if bank_type == 'public_islamic':
             closing_patterns = [
@@ -496,6 +492,14 @@ class FieldExtractor:
         keywords = field_config.get('keywords', [])
         section_marker = field_config.get('section_marker')
         
+        if bank_type == 'bank_islam':
+            match = re.search(r'(?:TOTAL\s+DEBIT|TOTALDEBIT)\s+\d+\s+([0-9,\.]+)', text, re.IGNORECASE)
+            if match:
+                value = match.group(1)
+                normalized = NumberFormatter.normalize(value, bank_type)
+                logger.info(f"Bank Islam total debit: {value} -> {normalized}")
+                return str(normalized) if normalized else None
+        
         if bank_type == 'public_islamic':
             summary_match = re.search(r'(?:RINGKASAN|SUMMARY|HIGHLIGHTS)', text, re.IGNORECASE)
             if summary_match:
@@ -524,6 +528,14 @@ class FieldExtractor:
         field_config = config.get('total_credit', {})
         keywords = field_config.get('keywords', [])
         section_marker = field_config.get('section_marker')
+        
+        if bank_type == 'bank_islam':
+            match = re.search(r'(?:TOTAL\s+CREDIT|TOTALCREDIT)\s+\d+\s+([0-9,\.]+)', text, re.IGNORECASE)
+            if match:
+                value = match.group(1)
+                normalized = NumberFormatter.normalize(value, bank_type)
+                logger.info(f"Bank Islam total credit: {value} -> {normalized}")
+                return str(normalized) if normalized else None
         
         if bank_type == 'public_islamic':
             summary_match = re.search(r'(?:RINGKASAN|SUMMARY|HIGHLIGHTS)', text, re.IGNORECASE)

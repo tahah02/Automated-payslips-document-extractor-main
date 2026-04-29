@@ -45,17 +45,20 @@ class DocumentClassifier:
             return "unknown", 0.0
         
         text_lower = text.lower()
+        text_no_spaces = text_lower.replace(' ', '')
         
         bank_score = 0
         payslip_score = 0
         
         for keyword in DocumentClassifier.BANK_STATEMENT_KEYWORDS:
-            if keyword.lower() in text_lower:
+            keyword_lower = keyword.lower()
+            if keyword_lower in text_lower or keyword_lower.replace(' ', '') in text_no_spaces:
                 bank_score += 1
                 logger.debug(f"Found bank keyword: {keyword}")
         
         for keyword in DocumentClassifier.PAYSLIP_KEYWORDS:
-            if keyword.lower() in text_lower:
+            keyword_lower = keyword.lower()
+            if keyword_lower in text_lower or keyword_lower.replace(' ', '') in text_no_spaces:
                 payslip_score += 1
                 logger.debug(f"Found payslip keyword: {keyword}")
         

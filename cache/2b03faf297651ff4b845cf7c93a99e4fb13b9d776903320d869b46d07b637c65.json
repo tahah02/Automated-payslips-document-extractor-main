@@ -1,0 +1,37 @@
+{
+  "upload_id": "test-upload",
+  "file_type": "pdf",
+  "document_type": "bank_statement",
+  "classification_confidence": 0.91,
+  "extraction_method": "pdfplumber",
+  "total_documents": 1,
+  "documents": [
+    {
+      "document_number": 1,
+      "document_type": "bank_statement",
+      "extracted_data": {
+        "account_number": "09010020435873",
+        "account_holder_name": "ENCIK MUHAMMAD SHAZWAN BIN SHARIFF",
+        "statement_date": "31/07/25",
+        "opening_balance": "142.52",
+        "closing_balance": "122.60",
+        "total_debit": "4340.78",
+        "total_credit": "4320.86",
+        "statement_period_from": "31/07/2025",
+        "statement_period_to": "31/07/2025",
+        "detected_bank": "bank_islam",
+        "bank_detection_confidence": 0.8
+      },
+      "confidence_score": 1.0,
+      "text_length": 7802
+    }
+  ],
+  "summary": {
+    "bank_statements": 1,
+    "other": 0,
+    "average_confidence": 1.0
+  },
+  "processing_completed_at": "2026-04-29T19:40:46.660408",
+  "original_file": "raw/test-upload.pdf",
+  "total_text_length": 7802
+}
