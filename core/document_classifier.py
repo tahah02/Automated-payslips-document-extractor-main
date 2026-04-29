@@ -1,45 +1,43 @@
+import json
 import logging
-from typing import Tuple
+from typing import Tuple, List
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 
 class DocumentClassifier:
     
-    BANK_STATEMENT_KEYWORDS = [
-        'account number', 'account no', 'nombor akaun', 'no akaun',
-        'statement date', 'tarikh penyata', 'penyata akaun',
-        'opening balance', 'closing balance', 'baki pembukaan', 'baki penutup',
-        'total debit', 'total credit', 'jumlah debit', 'jumlah kredit',
-        'transaction', 'transaksi', 'urus niaga',
-        'statement period', 'tempoh penyata',
-        'available balance', 'baki sedia ada',
-        'bank statement', 'penyata bank',
-        'current account', 'savings account', 'akaun semasa', 'akaun simpanan'
-    ]
+    BANK_STATEMENT_KEYWORDS = []
+    PAYSLIP_KEYWORDS = []
     
-    PAYSLIP_KEYWORDS = [
-        'payslip', 'pay slip', 'slip gaji', 'penyata gaji',
-        'salary', 'gaji', 'pendapatan', 'pondapatan', 'pondwpatan', 'pondopatan',
-        'gross income', 'gross salary', 'jumlah pendapatan', 'junlah pendapatan', 'junlah pondapatan', 'jumlah pondwpatan', 'gaji kasar',
-        'net income', 'net salary', 'gaji bersih', 'glji boraih', '0ji baralh', 'pendapatan bersih',
-        'deduction', 'potongan', 'pcrorgan', 'paectjan',
-        'epf', 'kwsp', 'kumpulan wang simpanan pekerja',
-        'socso', 'perkeso', 'pertubuhan keselamatan sosial',
-        'pcb', 'income tax', 'cukai pendapatan', 'cukul', 'cukez', 'cukii',
-        'allowance', 'elaun',
-        'overtime', 'kerja lebih masa',
-        'basic salary', 'gaji pokok', 'gaji asas', 'gji fokck',
-        'employee', 'pekerja', 'staff', 'kakitangan',
-        'employer', 'majikan', 'company',
-        'kerajaan malaysia', 'rerajaan malaysia', 'rerajun naliksia', 'kerrjian',
-        'anm', 'jabatan', 'bomba', 'bompa', 'jeba',
-        'bulan', 'dulah', 'dvlah',
-        'pendiprtam', 'pendmprtin', 'pend patun'
-    ]
+    @classmethod
+    def _load_keywords(cls):
+        if cls.BANK_STATEMENT_KEYWORDS and cls.PAYSLIP_KEYWORDS:
+            return
+        
+        config_path = Path("config/document_classification_config.json")
+        
+        try:
+            if config_path.exists():
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    config = json.load(f)
+                    cls.BANK_STATEMENT_KEYWORDS = config.get('bank_statement_keywords', [])
+                    cls.PAYSLIP_KEYWORDS = config.get('payslip_keywords', [])
+                    logger.info(f"Loaded {len(cls.BANK_STATEMENT_KEYWORDS)} bank statement keywords and {len(cls.PAYSLIP_KEYWORDS)} payslip keywords from config")
+            else:
+                logger.warning(f"Config file not found: {config_path}, using empty keyword lists")
+                cls.BANK_STATEMENT_KEYWORDS = []
+                cls.PAYSLIP_KEYWORDS = []
+        except Exception as e:
+            logger.error(f"Error loading classification config: {str(e)}")
+            cls.BANK_STATEMENT_KEYWORDS = []
+            cls.PAYSLIP_KEYWORDS = []
     
     @staticmethod
     def classify(text: str) -> Tuple[str, float]:
+        DocumentClassifier._load_keywords()
+        
         if not text:
             logger.warning("Empty text provided for classification")
             return "unknown", 0.0
