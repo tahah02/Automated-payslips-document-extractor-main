@@ -1,0 +1,33 @@
+{
+    "upload_id": "4fc1ee19-2ad2-4315-901c-4eae3fcefc67",
+    "file_type": "pdf",
+    "document_type": "payslip",
+    "classification_confidence": 0.92,
+    "extraction_method": "pdfplumber",
+    "total_documents": 1,
+    "documents": [
+        {
+            "document_number": 1,
+            "document_type": "payslip",
+            "extracted_data": {
+                "name": "Robert Anak Lari",
+                "id_number": "940830-13-5933",
+                "gross_income": "2987.80",
+                "total_deduction": "1673.43",
+                "net_income": "1314.37",
+                "month_year": "07 2025"
+            },
+            "confidence_score": 1.0,
+            "text_length": 892
+        }
+    ],
+    "summary": {
+        "bank_statements": 0,
+        "payslips": 1,
+        "other": 0,
+        "average_confidence": 1.0
+    },
+    "processing_completed_at": "2026-04-30T15:52:03.971535",
+    "original_file": "raw/4fc1ee19-2ad2-4315-901c-4eae3fcefc67.pdf",
+    "total_text_length": 892
+}
