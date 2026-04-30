@@ -81,7 +81,7 @@ class FieldExtractor:
                 logger.warning(f"Invalid day for February in date: {date_str}")
                 return None
             
-            logger.info(f"✓ Date validated: {date_str}")
+            logger.info(f" Date validated: {date_str}")
             return date_str
             
         except (ValueError, IndexError) as e:
@@ -107,7 +107,6 @@ class FieldExtractor:
                 logger.info(f"Fixed date: {date_str} → {fixed}")
                 return validated
             
-            import re
             match = re.search(r'(\d{1,2})/(\d{1,2})/(\d{2,4})', fixed)
             if match:
                 day, month, year = match.groups()

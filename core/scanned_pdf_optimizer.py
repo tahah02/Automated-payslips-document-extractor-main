@@ -1,16 +1,41 @@
 import logging
 import cv2
 import numpy as np
-from typing import Tuple, Optional
+from typing import Optional, Dict, Any
 from pathlib import Path
+from core.config import load_json, PREPROCESSING_CONFIG_FILE
 
 logger = logging.getLogger(__name__)
 
 
 class ScannedPDFOptimizer:    
-    def __init__(self):
-        self.blur_kernel = (5, 5)
-        self.morph_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
+        if config is None:
+            full_config = load_json(PREPROCESSING_CONFIG_FILE)
+            self.config = full_config.get('preprocessing', {})
+        else:
+            self.config = config.get('preprocessing', {})
+        
+        self.steps_config = self.config.get('steps', {})
+        self.enabled = self.config.get('enabled', True)
+        
+        deskew_cfg = self.steps_config.get('deskew', {})
+        self.deskew_enabled = deskew_cfg.get('enabled', True)
+        self.deskew_angle_threshold = deskew_cfg.get('angle_threshold', 0.5)
+        self.deskew_max_angle = deskew_cfg.get('max_angle', 45)
+        
+        contrast_cfg = self.steps_config.get('contrast_enhancement', {})
+        self.contrast_enabled = contrast_cfg.get('enabled', True)
+        self.clahe_clip_limit = contrast_cfg.get('clahe_clip_limit', 2.0)
+        self.clahe_tile_size = tuple(contrast_cfg.get('clahe_tile_grid_size', [8, 8]))
+        
+        denoise_cfg = self.steps_config.get('denoise', {})
+        self.denoise_enabled = denoise_cfg.get('enabled', True)
+        self.bilateral_d = denoise_cfg.get('bilateral_d', 9)
+        self.bilateral_sigma_color = denoise_cfg.get('bilateral_sigma_color', 75)
+        self.bilateral_sigma_space = denoise_cfg.get('bilateral_sigma_space', 75)
+        
+        logger.info(f"ScannedPDFOptimizer initialized - Enabled: {self.enabled}, Deskew: {self.deskew_enabled}, Contrast: {self.contrast_enabled}, Denoise: {self.denoise_enabled}")
     
     def optimize_image(self, image_path: str, adaptive: bool = True) -> np.ndarray:
         try:
@@ -21,13 +46,17 @@ class ScannedPDFOptimizer:
             
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             
-            gray = self._deskew(gray)
-            
-            
-            gray = self._enhance_contrast(gray)
-            
-            gray = self._denoise(gray)
-            
+            if self.enabled:
+                if self.deskew_enabled:
+                    gray = self._deskew(gray)
+                
+                if self.contrast_enabled:
+                    gray = self._enhance_contrast(gray)
+                
+                if self.denoise_enabled:
+                    gray = self._denoise(gray)
+            else:
+                logger.info("Preprocessing disabled in config")
             
             logger.info(f"Image optimization completed: {image_path}")
             return gray
@@ -48,7 +77,7 @@ class ScannedPDFOptimizer:
             for line in lines[:20]: 
                 rho, theta = line[0]
                 angle = np.degrees(theta) - 90
-                if abs(angle) < 45: 
+                if abs(angle) < self.deskew_max_angle:
                     angles.append(angle)
             
             if not angles:
@@ -56,25 +85,24 @@ class ScannedPDFOptimizer:
             
             avg_angle = np.median(angles)
             
-            if abs(avg_angle) > 0.5:
+            if abs(avg_angle) > self.deskew_angle_threshold:
                 h, w = image.shape
                 center = (w // 2, h // 2)
                 rotation_matrix = cv2.getRotationMatrix2D(center, avg_angle, 1.0)
-                image = cv2.warpAffine(image, rotation_matrix, (w, h), 
-                                      borderMode=cv2.BORDER_REPLICATE)
+                image = cv2.warpAffine(image, rotation_matrix, (w, h), borderMode=cv2.BORDER_REPLICATE)
                 logger.debug(f"Deskewed image by {avg_angle:.2f} degrees")
             
             return image
             
         except Exception as e:
-            logger.warning(f"Deskew failed: {str(e)}, continuing without deskew")
+            logger.warning(f"Deskew failed: {str(e)}")
             return image
     
     def _enhance_contrast(self, image: np.ndarray) -> np.ndarray:
         try:
-            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+            clahe = cv2.createCLAHE(clipLimit=self.clahe_clip_limit, tileGridSize=self.clahe_tile_size)
             enhanced = clahe.apply(image)
-            logger.debug("Contrast enhanced using CLAHE")
+            logger.debug(f"Contrast enhanced - clip={self.clahe_clip_limit}, tile={self.clahe_tile_size}")
             return enhanced
         except Exception as e:
             logger.warning(f"Contrast enhancement failed: {str(e)}")
@@ -82,8 +110,8 @@ class ScannedPDFOptimizer:
     
     def _denoise(self, image: np.ndarray) -> np.ndarray:
         try:
-            denoised = cv2.bilateralFilter(image, 9, 75, 75)
-            logger.debug("Image denoised")
+            denoised = cv2.bilateralFilter(image, self.bilateral_d, self.bilateral_sigma_color, self.bilateral_sigma_space)
+            logger.debug(f"Denoised - d={self.bilateral_d}, sigma_color={self.bilateral_sigma_color}, sigma_space={self.bilateral_sigma_space}")
             return denoised
         except Exception as e:
             logger.warning(f"Denoising failed: {str(e)}")
@@ -101,12 +129,9 @@ class ScannedPDFOptimizer:
     def estimate_quality(self, image: np.ndarray) -> float:
         try:
             laplacian_var = cv2.Laplacian(image, cv2.CV_64F).var()
-            
             quality = min(1.0, laplacian_var / 500.0)
-            
             logger.debug(f"Image quality score: {quality:.2f}")
             return quality
-            
         except Exception as e:
             logger.warning(f"Quality estimation failed: {str(e)}")
             return 0.5
@@ -115,11 +140,11 @@ class ScannedPDFOptimizer:
         quality = self.estimate_quality(image)
         
         if quality < 0.3:
-            optimal_dpi = 400  # Very poor quality, use high DPI
+            optimal_dpi = 400
         elif quality < 0.6:
-            optimal_dpi = 300  # Poor quality
+            optimal_dpi = 300
         else:
-            optimal_dpi = 200  # Good quality, can use lower DPI for speed
+            optimal_dpi = 200
         
         logger.info(f"Optimal DPI: {optimal_dpi} (quality: {quality:.2f})")
         return optimal_dpi

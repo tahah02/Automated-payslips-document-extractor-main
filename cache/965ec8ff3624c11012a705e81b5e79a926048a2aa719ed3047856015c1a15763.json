@@ -1,0 +1,32 @@
+{
+  "upload_id": "1227a612-4875-4868-a977-b198f34cacf1",
+  "file_type": "pdf",
+  "document_type": "payslip",
+  "classification_confidence": 1.0,
+  "extraction_method": "pdfplumber",
+  "total_documents": 1,
+  "documents": [
+    {
+      "document_number": 1,
+      "document_type": "payslip",
+      "extracted_data": {
+        "name": "KAMSILAWATI BINTI KAMLUN",
+        "id_number": "750203125544",
+        "gross_income": "10969.60",
+        "total_deduction": "7445.14",
+        "net_income": "3524.46",
+        "month_year": "09/2025"
+      },
+      "confidence_score": 1.0,
+      "text_length": 1244
+    }
+  ],
+  "summary": {
+    "payslips": 1,
+    "other": 0,
+    "average_confidence": 1.0
+  },
+  "processing_completed_at": "2026-04-30T12:40:48.502008",
+  "original_file": "raw/1227a612-4875-4868-a977-b198f34cacf1.pdf",
+  "total_text_length": 1244
+}

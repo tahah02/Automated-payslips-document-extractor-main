@@ -1,164 +1,33 @@
 {
-  "config_version": "1.0.0",
-  "schema_version": "1.0.0",
-  "last_updated": "2026-04-11",
+  "config_version": "2.0.0",
+  "last_updated": "2026-04-30",
   "preprocessing": {
     "enabled": true,
-    "save_debug_artifacts": true,
-    "debug_output_path": "output/debug",
     "image_conversion": {
       "dpi": 300,
       "zoom": 3.0,
-      "max_dpi": 300,
-      "format": "png",
-      "color_mode": "RGB"
+      "format": "png"
     },
     "steps": {
-      "grayscale": {
+      "deskew": {
         "enabled": true,
-        "order": 1
-      },
-      "denoise": {
-        "enabled": true,
-        "order": 2,
-        "method": "bilateral",
-        "bilateral_d": 9,
-        "bilateral_sigma_color": 75,
-        "bilateral_sigma_space": 75,
-        "median_ksize": 3
+        "angle_threshold": 0.5,
+        "max_angle": 45
       },
       "contrast_enhancement": {
         "enabled": true,
-        "order": 3,
-        "method": "clahe",
         "clahe_clip_limit": 2.0,
-        "clahe_tile_grid_size": [
-          8,
-          8
-        ],
-        "adaptive_clip_limit": true
+        "clahe_tile_grid_size": [8, 8]
       },
-      "sharpening": {
+      "denoise": {
         "enabled": true,
-        "order": 4,
-        "kernel_size": 3,
-        "sigma": 1.0,
-        "amount": 1.5,
-        "threshold": 0
-      },
-      "binarization": {
-        "enabled": false,
-        "order": 5,
-        "method": "adaptive",
-        "adaptive_method": "gaussian",
-        "block_size": 11,
-        "c": 2,
-        "otsu_enabled": false
-      },
-      "morphology": {
-        "enabled": false,
-        "order": 6,
-        "operation": "close",
-        "kernel_shape": "rect",
-        "kernel_size": [
-          2,
-          2
-        ]
+        "bilateral_d": 9,
+        "bilateral_sigma_color": 75,
+        "bilateral_sigma_space": 75
       }
     }
   },
-  "ocr": {
-    "primary_engine": "easyocr",
-    "fallback_engines": [
-      "paddleocr"
-    ],
-    "retry_on_low_confidence": true,
-    "retry_threshold": 0.6,
-    "min_confidence": 0.5,
-    "character_whitelist": {
-      "enabled": true,
-      "payslip": "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,/-:",
-      "bank_statement": "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz .,/-:"
-    },
-    "engines": {
-      "paddleocr": {
-        "use_angle_cls": true,
-        "lang": "en",
-        "use_gpu": false,
-        "det_db_thresh": 0.3,
-        "det_db_box_thresh": 0.5,
-        "rec_batch_num": 6
-      },
-      "tesseract": {
-        "lang": "eng",
-        "config": "--psm 6 --oem 3",
-        "preserve_interword_spaces": 1
-      },
-      "easyocr": {
-        "languages": [
-          "en"
-        ],
-        "gpu": false,
-        "detail": 1
-      }
-    }
-  },
-  "postprocessing": {
-    "enabled": true,
-    "fix_number_spacing": true,
-    "fix_decimal_points": true,
-    "remove_extra_spaces": true,
-    "fix_common_ocr_errors": true,
-    "number_patterns": {
-      "fix_spaced_numbers": true,
-      "fix_spaced_decimals": true,
-      "fix_spaced_commas": true
-    },
-    "ocr_corrections": {
-      "O": "0",
-      "l": "1",
-      "I": "1",
-      "S": "5",
-      "Z": "2",
-      "B": "8"
-    }
-  },
-  "token_processing": {
-    "merge_adjacent_tokens": true,
-    "token_merge_distance": 10,
-    "preserve_bbox": true,
-    "preserve_confidence": true,
-    "track_engine_used": true
-  },
-  "telemetry": {
-    "enabled": true,
-    "redact_pii": true,
-    "log_per_field_confidence": true,
-    "log_engine_performance": true,
-    "hash_sensitive_fields": true
-  },
-  "templates": {
-    "default": {},
-    "government_payslip": {
-      "preprocessing": {
-        "steps": {
-          "contrast_enhancement": {
-            "clahe_clip_limit": 3.0
-          },
-          "sharpening": {
-            "amount": 2.0
-          }
-        }
-      }
-    },
-    "bank_statement": {
-      "preprocessing": {
-        "steps": {
-          "binarization": {
-            "enabled": true
-          }
-        }
-      }
-    }
+  "performance": {
+    "save_optimized_images": true
   }
 }

@@ -1,5 +1,6 @@
 import logging
 import json
+import pdfplumber
 from typing import Dict, Any, List
 from datetime import datetime
 from pathlib import Path
@@ -7,8 +8,9 @@ from pathlib import Path
 from core.document_classifier import DocumentClassifier
 from core.ocr_engine import get_ocr_engine
 from core.pdfplumber_engine import PDFPlumberEngine
-from core.config import get_config, load_json
+from core.config import get_config, load_json, PREPROCESSING_CONFIG_FILE
 from core.cache_manager import CacheManager
+from core.scanned_pdf_optimizer import ScannedPDFOptimizer
 from extractors.bank_statement_extractor import FieldExtractor
 from extractors.payslip_extractor import PayslipExtractor
 from utils.pdf_processor import PDFProcessor
@@ -75,7 +77,6 @@ class UnifiedExtractionPipeline:
             logger.info(f"Document classified as: {doc_type} (confidence: {classification_confidence})")
             
             if doc_type == "payslip":
-                import pdfplumber
                 with pdfplumber.open(file_path) as pdf:
                     page = pdf.pages[0] if len(pdf.pages) > 0 else None
                     extracted_data = self.payslip_extractor.extract_payslip_fields(full_text, tokens=tokens, page=page)
@@ -125,13 +126,11 @@ class UnifiedExtractionPipeline:
             if self.ocr_engine is None:
                 self.ocr_engine = get_ocr_engine(self.ocr_engine_name, self.ocr_language)
             
-            from core.scanned_pdf_optimizer import ScannedPDFOptimizer
             optimizer = ScannedPDFOptimizer()
             
             processed_dir = f"uploads/processed/{upload_id}"
             Path(processed_dir).mkdir(parents=True, exist_ok=True)
             
-            from core.config import PREPROCESSING_CONFIG_FILE
             preprocessing_config = load_json(PREPROCESSING_CONFIG_FILE)
             
             base_dpi = preprocessing_config.get('preprocessing', {}).get('image_conversion', {}).get('dpi', 300)

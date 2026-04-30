@@ -1,6 +1,7 @@
 import os
 import sys
 import logging
+import uvicorn
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -95,8 +96,6 @@ async def health_check():
 
 
 if __name__ == "__main__":
-    import uvicorn
-    
     logger.info(f"Starting {settings.APP_NAME} on {settings.HOST}:{settings.PORT}")
     
     uvicorn.run(

@@ -1,4 +1,4 @@
-# Unified Document Extraction System - Complete Solution Document
+# Unified Document Extraction System - Solution Document
 
 ## Table of Contents
 
@@ -6,36 +6,31 @@
 2. [Problem Statement](#2-problem-statement)
 3. [Solution Overview](#3-solution-overview)
 4. [Key Features](#4-key-features)
-5. [System Components](#5-system-components)
+5. [System Architecture](#5-system-architecture)
 6. [How It Works](#6-how-it-works)
 7. [Supported Documents](#7-supported-documents)
-8. [Technical Implementation](#8-technical-implementation)
-9. [Performance Metrics](#9-performance-metrics)
-10. [Installation and Setup](#10-installation-and-setup)
-11. [API Usage](#11-api-usage)
-12. [Configuration](#12-configuration)
-13. [Optimization Features](#13-optimization-features)
-14. [Security Considerations](#14-security-considerations)
-15. [Troubleshooting](#15-troubleshooting)
-16. [Future Roadmap](#16-future-roadmap)
+8. [Performance Metrics](#8-performance-metrics)
+9. [API Usage](#9-api-usage)
+10. [Configuration](#10-configuration)
+11. [Security & Best Practices](#11-security--best-practices)
+12. [Future Roadmap](#12-future-roadmap)
 
 ---
 
 ## 1. Project Overview
 
-### 1.1 What is This Project?
+The Unified Document Extraction System is an intelligent FastAPI-based service that automatically processes financial documents (Bank Statements and Payslips) and extracts structured data using OCR technology and intelligent pattern matching.
 
-The Unified Document Extraction System is an intelligent API service that automatically processes financial documents and extracts structured data. It eliminates the need for manual data entry by using advanced OCR technology and pattern matching to read and understand bank statements and payslips.
+### Key Capabilities
 
-### 1.2 Who Should Use This?
+- **Automatic Document Detection** - Identifies document type without user input
+- **Dual Processing Modes** - Fast path for digital PDFs, OCR for scanned documents
+- **Multi-Bank Support** - CIMB, Bank Islam, BSN, Public Islamic, and generic formats
+- **High Accuracy** - 95%+ extraction accuracy with confidence scoring
+- **Result Caching** - Instant responses for repeated documents (300x faster)
+- **Multi-Language** - Supports English and Malay documents
 
-- **Financial Institutions** - Automate loan application processing
-- **HR/Payroll Companies** - Streamline employee verification
-- **Fintech Platforms** - Verify user income and assets
-- **Accounting Firms** - Automate document processing
-- **Any Organization** - That needs to extract data from financial documents
-
-### 1.3 Business Value
+### Business Value
 
 | Benefit | Impact |
 |---------|--------|
@@ -196,24 +191,24 @@ Non-blocking API design:
 
 ---
 
-## 5. System Components
+## 5. System Architecture
 
-### 5.1 Component Overview
+The system follows a modular, layered architecture for maintainability and scalability.
+
+### Architecture Diagram
 
 ```
 ┌─────────────────────────────────────────┐
 │         API Layer (FastAPI)             │
-│  • Upload endpoint                      │
-│  • Status endpoint                      │
-│  • Result endpoint                      │
+│  • Upload, Status, Result endpoints     │
+│  • Request validation & CORS            │
 └────────────────┬────────────────────────┘
                  │
 ┌────────────────▼────────────────────────┐
 │    Processing Pipeline (Orchestrator)   │
 │  • Document type detection              │
 │  • Text extraction routing              │
-│  • Document classification              │
-│  • Result caching                       │
+│  • Result caching (SHA256)              │
 └────────────────┬────────────────────────┘
                  │
     ┌────────────┴────────────┐
@@ -226,8 +221,8 @@ Non-blocking API design:
     └────────────┬───────────┘
                  │
     ┌────────────▼────────────┐
-    │  Document Classifier   │
-    │  (Bank vs Payslip)     │
+    │  Document Classifier    │
+    │  (Bank vs Payslip)      │
     └────────────┬────────────┘
                  │
     ┌────────────┴────────────┐
@@ -237,34 +232,26 @@ Non-blocking API design:
 │ Extractor        │  │ Extractor       │
 │ • Bank Detection │  │ • Field Extract │
 │ • Field Extract  │  │ • Validation    │
-│ • Validation     │  │ • Confidence    │
 └───┬──────────────┘  └──────┬──────────┘
     │                        │
     └────────────┬───────────┘
                  │
     ┌────────────▼────────────┐
-    │   Result Caching       │
-    │   (SHA256 Hash)        │
-    └────────────┬────────────┘
-                 │
-    ┌────────────▼────────────┐
-    │   JSON Output          │
-    │   (Structured Data)    │
-    └────────────────────────┘
+    │   JSON Output           │
+    │   (Structured Data)     │
+    └─────────────────────────┘
 ```
 
-### 5.2 Component Responsibilities
+### Component Layers
 
-| Component | Responsibility |
-|-----------|-----------------|
-| **API Layer** | Handle HTTP requests, file uploads, response formatting |
-| **Pipeline** | Orchestrate processing workflow, manage caching |
-| **Classifier** | Identify document type (Bank Statement or Payslip) |
-| **Text Extraction** | Extract text from PDF (digital or scanned) |
-| **Bank Detector** | Identify specific bank from statement |
-| **Extractors** | Extract document-specific fields |
-| **Validators** | Validate extracted data accuracy |
-| **Cache Manager** | Store and retrieve cached results |
+| Layer | Components | Responsibility |
+|-------|-----------|----------------|
+| **API Layer** | FastAPI routes, schemas | HTTP handling, validation |
+| **Pipeline Layer** | UnifiedPipeline, CacheManager | Orchestration, caching |
+| **Processing Layer** | Classifier, Extractors, OCR | Document analysis, extraction |
+| **Utility Layer** | PDF processor, text cleaner | Support functions |
+
+**For detailed component documentation, see [Architecture_3.md](docs/Architecture_3.md)**
 
 ---
 
@@ -593,33 +580,27 @@ Return (0.05s) = ~0.25 seconds total
 
 ---
 
-## 9. Performance Metrics
+## 8. Performance Metrics
 
-### 9.1 Processing Speed
+### Processing Speed
 
 | Scenario | Time | Notes |
 |----------|------|-------|
 | Digital PDF (1 page) | 1-2 seconds | Fast path, no OCR |
 | Scanned PDF (1 page) | 10-15 seconds | OCR processing |
 | Scanned PDF (5 pages) | 15-20 seconds | Multi-page OCR |
-| Cached Result | 0.1 seconds | Instant retrieval |
+| Cached Result | 0.1 seconds | 300x faster |
 
-### 9.2 Accuracy Metrics
+### Accuracy Metrics
 
-| Document Type | Accuracy | Confidence |
-|---------------|----------|-----------|
+| Document Type | Accuracy | Confidence Range |
+|---------------|----------|------------------|
 | Bank Statement | 95%+ | 0.90-0.99 |
 | Payslip | 92%+ | 0.85-0.98 |
 | Digital PDF | 99%+ | 0.95-1.00 |
 | Scanned PDF | 90%+ | 0.80-0.95 |
 
-### 9.3 Throughput
-
-- **Single Instance:** 30-60 documents per minute
-- **With Caching:** 100-300 documents per minute (for repeated documents)
-- **Horizontal Scaling:** Linear scaling with number of instances
-
-### 9.4 Resource Usage
+### Resource Usage
 
 | Resource | Usage |
 |----------|-------|
@@ -690,11 +671,12 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
 
 ---
 
-## 11. API Usage
+## 9. API Usage
 
-### 11.1 Upload Document
+### Upload Document
 
-**Request:**
+**POST** `/api/upload`
+
 ```bash
 curl -X POST "http://localhost:8000/api/upload" \
   -F "file=@bank_statement.pdf"
@@ -709,25 +691,18 @@ curl -X POST "http://localhost:8000/api/upload" \
 }
 ```
 
-### 11.2 Check Status
+### Check Status
 
-**Request:**
+**GET** `/api/status/{upload_id}`
+
 ```bash
 curl "http://localhost:8000/api/status/550e8400-e29b-41d4-a716-446655440000"
 ```
 
-**Response:**
-```json
-{
-  "upload_id": "550e8400-e29b-41d4-a716-446655440000",
-  "status": "completed",
-  "progress": 100
-}
-```
+### Get Results
 
-### 11.3 Get Results
+**GET** `/api/result/{upload_id}`
 
-**Request:**
 ```bash
 curl "http://localhost:8000/api/result/550e8400-e29b-41d4-a716-446655440000"
 ```
@@ -744,7 +719,8 @@ curl "http://localhost:8000/api/result/550e8400-e29b-41d4-a716-446655440000"
       "extracted_data": {
         "account_holder": "John Doe",
         "account_number": "12-3456789-0",
-        ...
+        "opening_balance": "5000.00",
+        "closing_balance": "6500.00"
       },
       "confidence_score": 0.95
     }
@@ -752,27 +728,16 @@ curl "http://localhost:8000/api/result/550e8400-e29b-41d4-a716-446655440000"
 }
 ```
 
-### 11.4 Health Check
+### API Documentation
 
-**Request:**
-```bash
-curl "http://localhost:8000/health"
-```
-
-**Response:**
-```json
-{
-  "status": "healthy",
-  "version": "1.0.0",
-  "service": "unified-document-extractor"
-}
-```
+- **Swagger UI:** `http://localhost:8000/docs`
+- **ReDoc:** `http://localhost:8000/redoc`
 
 ---
 
-## 12. Configuration
+## 10. Configuration
 
-### 12.1 Environment Variables
+### Environment Variables
 
 Create `.env` file:
 
@@ -796,195 +761,83 @@ PROCESSED_DIR=uploads/processed
 OUTPUT_DIR=output
 
 # CORS
-CORS_ORIGINS=["http://localhost:3000", "http://localhost:8000"]
+CORS_ORIGINS=["http://localhost:3000"]
 
 # File Upload
-MAX_FILE_SIZE=10485760  # 10MB in bytes
+MAX_FILE_SIZE=10485760  # 10MB
 ```
 
-### 12.2 Configuration Files
+### Configuration Files
 
-**extraction_config.json** - Bank statement patterns
-**payslip_extraction_config.json** - Payslip patterns
-**bank_specific_config.json** - Bank-specific rules
-**ocr_config.json** - OCR settings
+- **extraction_config.json** - Bank statement extraction patterns
+- **payslip_extraction_config.json** - Payslip extraction patterns
+- **bank_specific_config.json** - Bank-specific rules
+- **ocr_config.json** - OCR engine settings
+- **preprocessing_config.json** - Image preprocessing settings
 
-### 12.3 OCR Engine Selection
+### OCR Engine Selection
 
-Edit `.env`:
 ```env
 OCR_ENGINE=paddleocr
 # Options: paddleocr, easyocr, tesseract
 ```
 
-### 12.4 Language Configuration
-
-Edit `.env`:
-```env
-OCR_LANGUAGE=en
-# Options: en (English), ms (Malay), ch (Chinese)
-```
-
 ---
 
-## 13. Optimization Features
+## 11. Security & Best Practices
 
-### 13.1 Result Caching
-
-**How It Works:**
-1. Calculate SHA256 hash of PDF
-2. Check cache index
-3. Return cached result if found
-4. Save new results to cache
-
-**Performance Impact:**
-- First request: 30 seconds
-- Repeated request: 0.1 seconds (300x faster)
-
-**Cache Management:**
-```python
-from core.cache_manager import CacheManager
-
-cache = CacheManager()
-
-# Clear old cache (older than 7 days)
-cache.clear_old_cache(days=7)
-
-# Clear all cache
-cache.clear_all_cache()
-```
-
-### 13.2 Image Optimization
-
-For scanned PDFs, images are optimized before OCR:
-- Deskewing (correct rotation)
-- Contrast enhancement (CLAHE)
-- Noise reduction (bilateral filtering)
-
-### 13.3 Lazy Loading
-
-OCR engines are loaded only when needed:
-- Reduces startup time
-- Saves memory
-- Improves responsiveness
-
-### 13.4 Async Processing
-
-Non-blocking API design:
-- Upload and get ID immediately
-- Check status anytime
-- Get results when ready
-
----
-
-## 14. Security Considerations
-
-### 14.1 Current Security Measures
+### Current Security Measures
 
 1. **File Type Validation** - Only PDF files accepted
 2. **File Size Limits** - 10MB maximum
 3. **CORS Protection** - Configurable origins
-4. **Input Sanitization** - Text cleaning
-5. **Error Handling** - No sensitive data in errors
+4. **Input Sanitization** - Text cleaning and validation
+5. **Error Handling** - No sensitive data in error messages
 
-### 14.2 Recommended Enhancements
+### Recommended Enhancements
 
-1. **Authentication** - JWT/OAuth2
-2. **Rate Limiting** - Prevent abuse
-3. **Encryption** - Encrypt sensitive data
-4. **Audit Logging** - Track all processing
-5. **Virus Scanning** - Scan uploaded files
-6. **Data Retention** - Auto cleanup old files
-
-### 14.3 Best Practices
-
-- Use HTTPS in production
-- Implement authentication
-- Set up rate limiting
-- Monitor for suspicious activity
-- Regular security audits
-- Keep dependencies updated
+- Implement JWT/OAuth2 authentication
+- Add rate limiting to prevent abuse
+- Enable HTTPS in production
+- Implement audit logging
+- Set up automated security scanning
+- Regular dependency updates
 
 ---
 
-## 15. Troubleshooting
+## 12. Future Roadmap
 
-### 15.1 Common Issues
-
-**Issue: PaddleOCR not working**
-```bash
-# Clear cache
-rm -rf ~/.paddleocr
-
-# Reinstall
-pip install --upgrade paddleocr
-```
-
-**Issue: Memory issues**
-- Reduce DPI in config
-- Use EasyOCR instead of PaddleOCR
-- Process smaller PDFs
-- Increase system RAM
-
-**Issue: Tesseract not found**
-- Install Tesseract OCR
-- Update path in app/main.py
-- Verify installation
-
-**Issue: Slow processing**
-- Check if document is cached
-- Verify OCR engine selection
-- Check system resources
-- Consider GPU acceleration
-
-### 15.2 Debug Mode
-
-Enable debug logging:
-```env
-DEBUG=True
-LOG_LEVEL=DEBUG
-```
-
-Check logs:
-```bash
-tail -f output/logs/app.log
-```
-
----
-
-## 16. Future Roadmap
-
-### 16.1 Short-term (3-6 months)
+### Short-term (3-6 months)
 
 - [ ] Database integration (PostgreSQL)
-- [ ] Redis caching for results
+- [ ] Redis caching for distributed systems
 - [ ] Webhook notifications
 - [ ] Batch processing API
-- [ ] Email notifications
-
-### 16.2 Medium-term (6-12 months)
-
 - [ ] Docker containerization
+
+### Medium-term (6-12 months)
+
 - [ ] Kubernetes orchestration
-- [ ] Microservices architecture
+- [ ] Machine learning models for extraction
 - [ ] GraphQL API
 - [ ] Web UI dashboard
+- [ ] Transaction-level extraction
 
-### 16.3 Long-term (12+ months)
+### Long-term (12+ months)
 
-- [ ] Machine learning models for extraction
 - [ ] Real-time processing with WebSockets
 - [ ] Multi-tenant architecture
 - [ ] Cloud-native deployment (AWS/Azure/GCP)
-- [ ] Mobile app integration
+- [ ] Mobile SDK
+- [ ] Advanced analytics dashboard
 
 ---
 
 ## Conclusion
 
-The Unified Document Extraction System provides a complete, production-ready solution for automated financial document processing. With intelligent document detection, multiple OCR engines, result caching, and comprehensive error handling, it delivers both speed and accuracy.
+The Unified Document Extraction System provides a production-ready solution for automated financial document processing. With intelligent document detection, multiple OCR engines, result caching, and comprehensive error handling, it delivers both speed and accuracy.
 
-The modular architecture allows for easy customization and extension, while the async API design ensures scalability. Whether processing a few documents or thousands, the system adapts to your needs.
+The modular architecture allows for easy customization and extension, while the async API design ensures scalability. For detailed component documentation, see [Architecture_3.md](docs/Architecture_3.md).
 
-For questions or support, refer to the API documentation at `/docs` or contact the development team.
+For API documentation, visit `/docs` when the server is running.
 

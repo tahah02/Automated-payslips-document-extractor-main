@@ -599,16 +599,9 @@ class PayslipExtractor:
             return proximity_result
         
         logger.info(f"FAILED: No patterns matched for {field_name}")
-        return None
-    
-    def _extract_by_proximity(self, text: str, keywords: List[str], exclusion_keywords: List[str], max_distance: int = 100) -> Optional[str]:
-        return None
+        return None   
     
     def _extract_by_proximity_scanned(self, text: str, field_name: str) -> Optional[str]:
-        """
-        Fallback extraction for scanned PDFs using proximity-based search.
-        When regex fails, look for keywords and extract nearby numeric values.
-        """
         field_config = self.payslip_config.get(field_name, {})
         keywords = field_config.get("keywords", [])
         
@@ -638,7 +631,6 @@ class PayslipExtractor:
         return None
     
     def _fuzzy_match(self, keyword: str, text: str, threshold: float = 0.6) -> bool:
-        """Check if keyword appears in text with fuzzy matching (for OCR errors)."""
         if len(keyword) < 3:
             return keyword in text
         
@@ -657,7 +649,6 @@ class PayslipExtractor:
         return match_ratio >= threshold
     
     def _extract_number_from_nearby_lines(self, lines: List[str], keyword_line_idx: int, field_name: str) -> Optional[str]:
-        """Extract numeric value from lines near the keyword."""
         search_range = min(4, len(lines) - keyword_line_idx)
         
         for offset in range(search_range):
@@ -667,7 +658,6 @@ class PayslipExtractor:
             
             line = lines[line_idx]
             
-            import re
             numbers = re.findall(r'[\d\s,\.]+', line)
             
             for num_str in numbers:

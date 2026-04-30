@@ -1,4 +1,5 @@
 import logging
+import fitz
 from pathlib import Path
 from typing import List
 
@@ -10,8 +11,6 @@ class PDFProcessor:
     @staticmethod
     def pdf_to_images(pdf_path: str, output_dir: str = "temp", dpi: int = 300, zoom: float = 3.0) -> List[str]:
         try:
-            import fitz
-            
             Path(output_dir).mkdir(parents=True, exist_ok=True)
             
             pdf_document = fitz.open(pdf_path)
@@ -44,7 +43,6 @@ class PDFProcessor:
     @staticmethod
     def get_pdf_page_count(pdf_path: str) -> int:
         try:
-            import fitz
             pdf_document = fitz.open(pdf_path)
             page_count = len(pdf_document)
             pdf_document.close()

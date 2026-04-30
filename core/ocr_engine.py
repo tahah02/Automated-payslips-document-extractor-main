@@ -1,6 +1,10 @@
+import os
+import logging
 from abc import ABC, abstractmethod
 from typing import List, Tuple, Dict, Any
-import logging
+from paddleocr import PaddleOCR
+import easyocr
+import pytesseract
 
 
 logger = logging.getLogger(__name__)
@@ -51,12 +55,10 @@ class PaddleOCREngine(OCREngine):
     
     def __init__(self, language: str = "en"):
         try:
-            import os
             os.environ['PADDLE_DEVICE'] = 'cpu'
             os.environ['PADDLE_DISABLE_ONEDNN'] = '1'
             os.environ['PADDLE_DISABLE_FAST_MATH'] = '1'
             
-            from paddleocr import PaddleOCR
             self.ocr = PaddleOCR(use_angle_cls=False, lang=language)
             logger.info("PaddleOCR initialized successfully")
         except ImportError:
@@ -92,7 +94,6 @@ class EasyOCREngine(OCREngine):
     
     def __init__(self, language: str = "en"):
         try:
-            import easyocr
             languages = ['ms', 'en'] if language == 'en' else [language, 'en']
             self.reader = easyocr.Reader(languages)
             logger.info(f"EasyOCR initialized successfully with languages: {languages}")
@@ -129,7 +130,6 @@ class TesseractOCREngine(OCREngine):
     
     def __init__(self, language: str = "eng"):
         try:
-            import pytesseract
             self.pytesseract = pytesseract
             self.language = language
             logger.info("Tesseract OCR initialized successfully")
