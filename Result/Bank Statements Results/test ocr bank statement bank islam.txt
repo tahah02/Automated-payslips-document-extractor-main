@@ -1,0 +1,45 @@
+test ocr bank statement bank islam
+{
+    "upload_id": "190753ee-29b1-4882-98a7-cc64afc6eced",
+    "file_type": "pdf",
+    "total_documents": 1,
+    "documents": [
+        {
+            "document_number": 1,
+            "document_type": "bank_statement",
+            "extracted_data": {
+                "account_holder_name": "ENCIK MUHAMMAD SHAZWAN BIN SHARIFF",
+                "account_number": "09010020435873",
+                "statement_date": "31/07/25",
+                "opening_balance": "142.52",
+                "closing_balance": "122.60",
+                "available_balance": null,
+                "total_debit": "4340.78",
+                "total_credit": "4320.86",
+                "statement_period_from": "31/07/2025",
+                "statement_period_to": "31/07/2025",
+                "page_count": 4,
+                "pages": [
+                    1,
+                    2,
+                    3,
+                    4
+                ]
+            },
+            "confidence_score": 0.91,
+            "text_length": 8520,
+            "is_merged": true,
+            "merged_from_pages": 4
+        }
+    ],
+    "summary": {
+        "bank_statements": 1,
+        "other": 0,
+        "average_confidence": 0.91
+    },
+    "processing_completed_at": "2026-04-14T12:45:25.418050",
+    "original_file": "raw/190753ee-29b1-4882-98a7-cc64afc6eced.pdf",
+    "total_text_length": 8520,
+    "config_version": "2.0.0",
+    "template_used": "default"
+}

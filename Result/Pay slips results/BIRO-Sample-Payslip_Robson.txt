@@ -1,0 +1,13 @@
+BIRO-Sample-Payslip_Robson
+[
+    {
+        "output": {
+            "name": "Robson Andreas",
+            "id_number": "880213-49-5245",
+            "gross_income": 40000,
+            "net_income": 30601,
+            "total_deduction": 9399,
+            "month_year": "10/2025"
+        }
+    }
+]

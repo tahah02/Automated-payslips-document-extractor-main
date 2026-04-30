@@ -1,0 +1,13 @@
+Biro Fatim
+[
+    {
+        "output": {
+            "name": "Fatim Nor Mohsein bin Nordin",
+            "id_number": "720613-08-5269",
+            "gross_income": 50000,
+            "net_income": 34601,
+            "total_deduction": 15399,
+            "month_year": "10/2025"
+        }
+    }
+]

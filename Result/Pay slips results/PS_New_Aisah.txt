@@ -1,0 +1,13 @@
+PS_New_Aisah
+[
+    {
+        "output": {
+            "name": "Siti Aisah Binti Ghazali",
+            "id_number": "790712-03-5260",
+            "gross_income": 10000,
+            "net_income": 7000,
+            "total_deduction": 3000,
+            "month_year": "03/2026"
+        }
+    }
+]

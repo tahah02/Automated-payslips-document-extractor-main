@@ -1,0 +1,13 @@
+Payslip
+[
+    {
+        "output": {
+            "name": "Muhammad Shazwan Bin Shariff",
+            "id_number": "891119-05-5167",
+            "gross_income": 7125.78,
+            "net_income": 3993.36,
+            "total_deduction": 3132.42,
+            "month_year": "07/2025"
+        }
+    }
+]

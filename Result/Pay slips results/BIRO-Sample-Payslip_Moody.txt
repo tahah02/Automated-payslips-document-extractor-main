@@ -1,0 +1,13 @@
+BIRO-Sample-Payslip_Moody
+[
+    {
+        "output": {
+            "name": "Moody bin Pitah",
+            "id_number": "780809-12-5503",
+            "gross_income": 40000,
+            "net_income": 30601,
+            "total_deduction": 9399,
+            "month_year": "10/2025"
+        }
+    }
+]

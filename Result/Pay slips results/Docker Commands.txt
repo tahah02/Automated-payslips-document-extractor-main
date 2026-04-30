@@ -1,0 +1,104 @@
+Docker Commands
+cd "C:\Users\abvmadmin3\Desktop\Fraud Detection System\transaction-checker-dockerfile-change"
+docker build --no-cache -t fraud-detection:windows -f Docker\Dockerfile.windows .
+docker build --no-cache -t fraud-detection:latest -f Docker\Dockerfile.windows .
+
+docker build -t fraud-detection:windows -f Docker\Dockerfile.windows .
+# Purana container remove karein
+docker rm -f fraud-app
+
+# Naya container saare variables ke sath start karein
+ docker run -d --name fraud-app-v2 -p 8001:8000 -p 5203:5202 fraud-detection:v2
+docker run -d `
+  -p 8000:8000 `
+  -p 5202:5202 `
+  --name fraud-app-v1 `
+  -e API_USERNAME=FDS `
+  -e API_PASSWORD=12345 `
+  -e ADMIN_KEY=FDS12345 `
+  fraud-detection:windows
+
+docker run -d `
+  -p 8000:8000 `
+  -p 5202:5202 `
+  --name fraud-app `
+  -e API_USERNAME=FDS `
+  -e API_PASSWORD=12345 `
+  -e ADMIN_KEY=FDS12345 `
+  fraud-detection:v2
+
+
+docker run -d `
+  -p 8000:8000 `
+  -p 5202:5202 `
+  --name fraud-app-v2 `
+  -e API_USERNAME=FDS `
+  -e API_PASSWORD=12345 `
+  -e ADMIN_KEY=FDS12345 `
+  fraud-detection:v1
+
+docker rm -f fraud-app-v2
+docker logs -f fraud-app-v2
+docker stop fraud-app
+d63aee2c9da0   fraud-detection:v2        "powershell -File C:…"   About an hour ago   Up About an hour        0.0.0.0:5203->5202/tcp, 0.0.0.0:8001->8000/tcp   fraud-app-v2
+
+docker build --no-cache -t fraud-detection:windows -f Docker/Dockerfile.windows .
+
+
+version: '3.8'
+
+services:
+  fraud-detection-api:
+    build:
+      context: .
+      dockerfile: Docker/Dockerfile.windows
+    container_name: fraud_system
+    ports:
+      - "8000:8000"
+      - "5202:5202"
+    env_file:
+      - .env
+    environment:
+      - API_USERNAME=FDS
+      - API_PASSWORD=12345
+      - ADMIN_KEY=FDS12345
+      - ConnectionStrings__DefaultConnection=Server=10.112.32.4,1433;Database=retailchannelLogs;User Id=dbuser;Password=Codebase202212?!;TrustServerCertificate=true;
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=C:/app;C:/app/api;C:/app/backend
+    # volumes:
+    #   - ./backend/model:C:/app/backend/model
+    #   - ./data:C:/app/data
+    #   - ./api:C:/app/api
+    #   - ./backend:C:/app/backend
+    restart: unless-stopped
+
+
+
+
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0-windowsservercore-ltsc2019 AS dotnet-builder
+WORKDIR C:/src
+COPY ConfigManagementUI/ ./
+RUN dotnet publish "ConfigManagementUI.csproj" -c Release -o C:/app/publish
+
+FROM mcr.microsoft.com/windows/servercore:ltsc2019 AS python-backend
+WORKDIR C:/app
+COPY Python310/ C:/Python310
+COPY msodbcsql.msi C:/app/msodbcsql.msi
+
+RUN powershell -Command Start-Process msiexec.exe -ArgumentList '/i', 'C:\app\msodbcsql.msi', '/quiet', '/norestart' -Wait ; Remove-Item C:\app\msodbcsql.msi
+
+COPY Backend/ ./
+RUN C:\Python310\python.exe -m pip install --no-cache-dir -r requirements.txt -r requirements-api.txt
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-windowsservercore-ltsc2019
+WORKDIR C:/app
+COPY --from=dotnet-builder C:/app/publish ./Frontend
+COPY --from=python-backend C:/Python310 C:/Python310
+COPY --from=python-backend C:/app ./Backend
+ENV PATH="C:\Python310;C:\Python310\Scripts;C:\Windows\system32;C:\Windows"
+EXPOSE 5202
+EXPOSE 8000
+CMD powershell -Command "Start-Process C:\Python310\python.exe -ArgumentList 'Backend/app.py' -NoNewWindow ; Start-Sleep -Seconds 2 ; dotnet Frontend/ConfigManagementUI.dll"
+
+

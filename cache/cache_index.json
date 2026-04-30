@@ -1,9 +1,4 @@
 {
-  "2b03faf297651ff4b845cf7c93a99e4fb13b9d776903320d869b46d07b637c65": {
-    "cache_file": "cache/2b03faf297651ff4b845cf7c93a99e4fb13b9d776903320d869b46d07b637c65.json",
-    "timestamp": "2026-04-29T19:40:46.662494",
-    "original_file": "Dataset/Bank Statements/test ocr bank statement bank islam.pdf"
-  },
   "68eb4c403c7714901e95ee8936133ce8b7864d2771bb9bd3b97f425c29c674ee": {
     "cache_file": "cache/68eb4c403c7714901e95ee8936133ce8b7864d2771bb9bd3b97f425c29c674ee.json",
     "timestamp": "2026-04-29T19:50:35.916393",
@@ -23,5 +18,20 @@
     "cache_file": "cache/965ec8ff3624c11012a705e81b5e79a926048a2aa719ed3047856015c1a15763.json",
     "timestamp": "2026-04-30T12:40:48.504008",
     "original_file": "uploads\\raw\\1227a612-4875-4868-a977-b198f34cacf1.pdf"
+  },
+  "a938d47bf0dcff72fb9976f7c7c9aa48985c89e5800b2490f8e609cfac1312e6": {
+    "cache_file": "cache/a938d47bf0dcff72fb9976f7c7c9aa48985c89e5800b2490f8e609cfac1312e6.json",
+    "timestamp": "2026-04-30T15:52:03.974051",
+    "original_file": "uploads\\raw\\4fc1ee19-2ad2-4315-901c-4eae3fcefc67.pdf"
+  },
+  "2b03faf297651ff4b845cf7c93a99e4fb13b9d776903320d869b46d07b637c65": {
+    "cache_file": "cache/2b03faf297651ff4b845cf7c93a99e4fb13b9d776903320d869b46d07b637c65.json",
+    "timestamp": "2026-04-30T16:02:40.135964",
+    "original_file": "uploads\\raw\\e3da62a0-1db3-40b8-9b3f-899f732a90d8.pdf"
+  },
+  "5d77c44c6c93186149665d87de0c6f50d9e4bb2ad5ca41c32f498cdc7a1add5a": {
+    "cache_file": "cache/5d77c44c6c93186149665d87de0c6f50d9e4bb2ad5ca41c32f498cdc7a1add5a.json",
+    "timestamp": "2026-04-30T17:02:04.420779",
+    "original_file": "uploads\\raw\\dc95bc9b-cd1f-4697-a699-c71576edb398.pdf"
   }
 }

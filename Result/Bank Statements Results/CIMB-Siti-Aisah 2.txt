@@ -1,0 +1,37 @@
+CIMB-Siti-Aisah 2
+{
+    "upload_id": "44fa05c4-c746-4fae-9975-f1cbba1a09fc",
+    "file_type": "pdf",
+    "total_documents": 1,
+    "documents": [
+        {
+            "document_number": 1,
+            "document_type": "bank_statement",
+            "extracted_data": {
+                "account_number": "51-1103355-2",
+                "account_holder_name": "SITI AISAH BINTI GHAZALI",
+                "statement_date": "01/01/2026",
+                "opening_balance": "550.00",
+                "closing_balance": "348.77",
+                "total_debit": null,
+                "total_credit": null,
+                "statement_period_from": "07/08/2023",
+                "statement_period_to": "25/08/2023",
+                "detected_bank": "cimb",
+                "bank_detection_confidence": 1.0
+            },
+            "confidence_score": 0.82,
+            "text_length": 2000
+        }
+    ],
+    "summary": {
+        "bank_statements": 1,
+        "other": 0,
+        "average_confidence": 0.82
+    },
+    "processing_completed_at": "2026-04-14T12:39:09.974330",
+    "original_file": "raw/44fa05c4-c746-4fae-9975-f1cbba1a09fc.pdf",
+    "total_text_length": 2000,
+    "config_version": "2.0.0",
+    "template_used": "default"
+}

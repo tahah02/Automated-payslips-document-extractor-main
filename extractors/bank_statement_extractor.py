@@ -242,6 +242,27 @@ class FieldExtractor:
         if not extracted.get('closing_balance'):
             extracted['closing_balance'] = "0.00"
         
+        period_from = extracted.get('statement_period_from')
+        period_to = extracted.get('statement_period_to')
+        
+        if period_from and period_to:
+            normalized_from = self._normalize_date_for_comparison(period_from)
+            normalized_to = self._normalize_date_for_comparison(period_to)
+            
+            if normalized_from == normalized_to:
+                extracted['statement_date'] = period_from
+                extracted.pop('statement_period_from', None)
+                extracted.pop('statement_period_to', None)
+                logger.info(f"Same period dates detected, using statement_date: {period_from}")
+            else:
+                extracted.pop('statement_date', None)
+                logger.info(f"Date range detected: {period_from} to {period_to}")
+        elif period_from or period_to:
+            extracted['statement_date'] = period_from or period_to
+            extracted.pop('statement_period_from', None)
+            extracted.pop('statement_period_to', None)
+            logger.info(f"Single date found, using statement_date: {extracted['statement_date']}")
+        
         logger.info(f"Final extracted data for {bank_type}: {extracted}")
         return extracted
     
@@ -729,6 +750,48 @@ class FieldExtractor:
         except Exception as e:
             logger.warning(f"Failed to extract last transaction date: {e}")
             return None
+    
+    def _normalize_date_for_comparison(self, date_str: str) -> Optional[str]:
+        if not date_str:
+            return None
+        
+        try:
+            if '/' in date_str:
+                parts = date_str.split('/')
+                day = parts[0].zfill(2)
+                month = parts[1].zfill(2)
+                year = parts[2]
+                
+                if len(year) == 2:
+                    year = '20' + year
+                
+                return f"{day}/{month}/{year}"
+            
+            elif ' ' in date_str:
+                parts = date_str.split()
+                if len(parts) == 3:
+                    day = parts[0].zfill(2)
+                    month_name = parts[1]
+                    year = parts[2]
+                    
+                    MONTH_MAP = {
+                        'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+                        'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+                        'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12',
+                        'January': '01', 'February': '02', 'March': '03',
+                        'April': '04', 'June': '06', 'July': '07',
+                        'August': '08', 'September': '09', 'October': '10',
+                        'November': '11', 'December': '12'
+                    }
+                    
+                    month = MONTH_MAP.get(month_name, month_name)
+                    return f"{day}/{month}/{year}"
+            
+            return date_str
+        
+        except Exception as e:
+            logger.warning(f"Error normalizing date {date_str}: {e}")
+            return date_str
     
     def calculate_confidence(self, extracted_data: Dict[str, Any]) -> float:
         if not extracted_data:
