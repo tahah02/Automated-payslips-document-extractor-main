@@ -1,0 +1,37 @@
+{
+  "upload_id": "5b8179ff-9582-4ed2-b3c6-0017338153c4",
+  "file_type": "pdf",
+  "document_type": "bank_statement",
+  "classification_confidence": 1.0,
+  "extraction_method": "pdfplumber",
+  "total_documents": 1,
+  "documents": [
+    {
+      "document_number": 1,
+      "document_type": "bank_statement",
+      "extracted_data": {
+        "account_number": "1310241000012132",
+        "account_holder_name": "ROBERT ANAK LARI",
+        "opening_balance": "19.54",
+        "closing_balance": "110.16",
+        "total_debit": "6206.25",
+        "total_credit": "6296.87",
+        "statement_period_from": "01/07/2025",
+        "statement_period_to": "29/07/2025",
+        "available_balance": "110.16",
+        "detected_bank": "bsn",
+        "bank_detection_confidence": 1.0
+      },
+      "confidence_score": 1.0,
+      "text_length": 5701
+    }
+  ],
+  "summary": {
+    "bank_statements": 1,
+    "other": 0,
+    "average_confidence": 1.0
+  },
+  "processing_completed_at": "2026-05-04T12:48:30.441195",
+  "original_file": "raw/5b8179ff-9582-4ed2-b3c6-0017338153c4.pdf",
+  "total_text_length": 5701
+}

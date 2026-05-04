@@ -1,0 +1,7 @@
+Changes pushed into branch No MOck change, only nullable handling will be pushed
+Take latest of dev deployment branch
+Merge ur branch into dev deployment
+Then test dev deployment branch and then deploy .
+
+
+{"customer_id":"1108296","from_account_no":"011108296034","from_account_currency":"AED","to_account_no":"","transaction_amount":100,"transfer_currency":"AED","transfer_type":"S","charges_type":"SHA","swift":"AIINPKKA","check_constraint":true,"bank_country":"PK","idempotence_key":"1ded9537-3fa9-4712-b3f2-b23ca90294f2"}

@@ -33,5 +33,40 @@
     "cache_file": "cache/5d77c44c6c93186149665d87de0c6f50d9e4bb2ad5ca41c32f498cdc7a1add5a.json",
     "timestamp": "2026-04-30T17:02:04.420779",
     "original_file": "uploads\\raw\\dc95bc9b-cd1f-4697-a699-c71576edb398.pdf"
+  },
+  "2806df61102e68e51bdfb4402caeaee86d5e34343ebf5e6d869c9702b66e5d8d": {
+    "cache_file": "cache/2806df61102e68e51bdfb4402caeaee86d5e34343ebf5e6d869c9702b66e5d8d.json",
+    "timestamp": "2026-05-04T12:39:40.346424",
+    "original_file": "uploads\\raw\\dc83176f-f89f-451b-92c5-d6801a327b6e.pdf"
+  },
+  "c426a17ba07b73919d6a74cf59f3805ef7160c7edd9dd7c854280302a00518ec": {
+    "cache_file": "cache/c426a17ba07b73919d6a74cf59f3805ef7160c7edd9dd7c854280302a00518ec.json",
+    "timestamp": "2026-05-04T12:48:30.443225",
+    "original_file": "uploads\\raw\\5b8179ff-9582-4ed2-b3c6-0017338153c4.pdf"
+  },
+  "b79ab903ed222747426586b2a9e1fc458733e84fed0ec998e92eb80bc70fc075": {
+    "cache_file": "cache/b79ab903ed222747426586b2a9e1fc458733e84fed0ec998e92eb80bc70fc075.json",
+    "timestamp": "2026-05-04T13:29:09.385701",
+    "original_file": "uploads\\raw\\a1e8f96d-09c8-4a18-8e10-9b41becae621.pdf"
+  },
+  "8aa0b6cf49d76ce4125c44a3a387b753918aa64b84f57cecefd0450f50aaba42": {
+    "cache_file": "cache/8aa0b6cf49d76ce4125c44a3a387b753918aa64b84f57cecefd0450f50aaba42.json",
+    "timestamp": "2026-05-04T13:31:48.336981",
+    "original_file": "uploads\\raw\\42b1fa30-8074-4f91-8462-cbfb290cd02f.pdf"
+  },
+  "8d8eeb1e6ece244cc219176320895ca8e10b9d8002a2ed1689a6c6ac7fc70d56": {
+    "cache_file": "cache/8d8eeb1e6ece244cc219176320895ca8e10b9d8002a2ed1689a6c6ac7fc70d56.json",
+    "timestamp": "2026-05-04T13:34:57.225280",
+    "original_file": "uploads\\raw\\3203bd67-a491-45a1-9048-374c95dc57ec.pdf"
+  },
+  "5ff371dca07c593b96cad626c75f8410ef9deb5286db192c027b62f0fc878ffc": {
+    "cache_file": "cache/5ff371dca07c593b96cad626c75f8410ef9deb5286db192c027b62f0fc878ffc.json",
+    "timestamp": "2026-05-04T13:43:03.847528",
+    "original_file": "uploads\\raw\\3b736623-f621-43ae-b31b-e131d2a27d57.pdf"
+  },
+  "2d2662effa589c093ba1eeec8d21eccf9a1b64841852b6a0c91cdf1fda6987d2": {
+    "cache_file": "cache/2d2662effa589c093ba1eeec8d21eccf9a1b64841852b6a0c91cdf1fda6987d2.json",
+    "timestamp": "2026-05-04T13:56:45.307514",
+    "original_file": "uploads\\raw\\dcc977f6-fc80-4312-b061-11d7c7908dc4.pdf"
   }
 }

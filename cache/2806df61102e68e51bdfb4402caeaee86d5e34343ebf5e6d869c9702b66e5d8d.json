@@ -1,0 +1,35 @@
+{
+  "upload_id": "dc83176f-f89f-451b-92c5-d6801a327b6e",
+  "file_type": "pdf",
+  "document_type": "bank_statement",
+  "classification_confidence": 0.92,
+  "extraction_method": "pdfplumber",
+  "total_documents": 1,
+  "documents": [
+    {
+      "document_number": 1,
+      "document_type": "bank_statement",
+      "extracted_data": {
+        "account_number": "51-1103355-2",
+        "account_holder_name": "SITI AISAH BINTI GHAZALI",
+        "statement_date": "30/11/2025",
+        "opening_balance": "550.00",
+        "closing_balance": "348.77",
+        "total_debit": null,
+        "total_credit": null,
+        "detected_bank": "cimb",
+        "bank_detection_confidence": 1.0
+      },
+      "confidence_score": 0.78,
+      "text_length": 1989
+    }
+  ],
+  "summary": {
+    "bank_statements": 1,
+    "other": 0,
+    "average_confidence": 0.78
+  },
+  "processing_completed_at": "2026-05-04T12:39:40.342295",
+  "original_file": "raw/dc83176f-f89f-451b-92c5-d6801a327b6e.pdf",
+  "total_text_length": 1989
+}

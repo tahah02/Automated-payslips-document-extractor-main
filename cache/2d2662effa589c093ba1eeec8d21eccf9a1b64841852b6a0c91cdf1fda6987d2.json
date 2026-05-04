@@ -1,0 +1,32 @@
+{
+  "upload_id": "dcc977f6-fc80-4312-b061-11d7c7908dc4",
+  "file_type": "pdf",
+  "document_type": "payslip",
+  "classification_confidence": 0.93,
+  "extraction_method": "pdfplumber",
+  "total_documents": 1,
+  "documents": [
+    {
+      "document_number": 1,
+      "document_type": "payslip",
+      "extracted_data": {
+        "name": "Siti Aisah Binti Ghazali",
+        "id_number": "790712-03-5260",
+        "gross_income": "10000.00",
+        "total_deduction": "3000.00",
+        "net_income": "7000.00",
+        "month_year": "03 2026"
+      },
+      "confidence_score": 1.0,
+      "text_length": 751
+    }
+  ],
+  "summary": {
+    "payslips": 1,
+    "other": 0,
+    "average_confidence": 1.0
+  },
+  "processing_completed_at": "2026-05-04T13:56:44.896351",
+  "original_file": "raw/dcc977f6-fc80-4312-b061-11d7c7908dc4.pdf",
+  "total_text_length": 751
+}

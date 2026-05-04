@@ -1,0 +1,32 @@
+{
+  "upload_id": "3b736623-f621-43ae-b31b-e131d2a27d57",
+  "file_type": "pdf",
+  "document_type": "payslip",
+  "classification_confidence": 0.92,
+  "extraction_method": "pdfplumber",
+  "total_documents": 1,
+  "documents": [
+    {
+      "document_number": 1,
+      "document_type": "payslip",
+      "extracted_data": {
+        "name": "Muhammad Shazwan Bin Shariff",
+        "id_number": "891119-05-5167",
+        "gross_income": "7125.78",
+        "total_deduction": "3132.42",
+        "net_income": "3993.36",
+        "month_year": "07 2025"
+      },
+      "confidence_score": 1.0,
+      "text_length": 962
+    }
+  ],
+  "summary": {
+    "payslips": 1,
+    "other": 0,
+    "average_confidence": 1.0
+  },
+  "processing_completed_at": "2026-05-04T13:43:03.846530",
+  "original_file": "raw/3b736623-f621-43ae-b31b-e131d2a27d57.pdf",
+  "total_text_length": 962
+}

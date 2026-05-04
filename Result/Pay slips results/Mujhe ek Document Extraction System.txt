@@ -1,0 +1,147 @@
+Mujhe ek Document Extraction System banana hai jo PDF documents (Payslips aur Bank Statements) se structured data extract kare. Ye ek FastAPI-based production-ready application honi chahiye.
+
+### PROJECT REQUIREMENTS:
+
+1. TECHNOLOGY STACK:
+   - Backend: FastAPI with Uvicorn server
+   - OCR: EasyOCR(primary), support for PaddleOCR  and Tesseract
+   - PDF Processing: PyMuPDF
+   - Data Validation: Pydantic
+   - Python 3.13+
+
+2. CORE FEATURES:
+   - PDF upload via REST API
+   - Multi-page PDF processing
+   - Automatic document classification (Payslip ya Bank Statement)
+   - OCR-based text extraction
+   - Intelligent field extraction using regex patterns
+   - Confidence scoring for extracted data
+   - Async background processing
+   - RESTful API with Swagger documentation
+
+3. DOCUMENT TYPES & FIELDS:
+
+   PAYSLIP (6 fields extract karne hain):
+   - name: Employee name
+   - id_number: NRIC/ID (format: 123456-12-1234)
+   - gross_income: Gross salary amount
+   - net_income: Net salary amount
+   - total_deduction: Total deductions
+   - month_year: Pay period (MM/YYYY format)
+
+   BANK STATEMENT (5 fields extract karne hain):
+   - account_holder_name: Account owner name
+   - account_number: Bank account number (format: 12-1234567-1)
+   - statement_date: Statement date (DD/MM/YYYY)
+   - opening_balance: Opening balance amount
+   - closing_balance: Closing balance amount
+
+4. API ENDPOINTS:
+   - POST /api/upload - PDF upload karne ke liye
+   - GET /api/status/{upload_id} - Processing status check karne ke liye
+   - GET /api/result/{upload_id} - Extracted data retrieve karne ke liye
+   - GET /health - Health check endpoint
+
+5. PROJECT STRUCTURE:
+   document-extraction-poc/
+   ├── app/                    # FastAPI application
+   │   ├── main.py            # Entry point
+   │   ├── config.py          # Configuration
+   │   └── api/
+   │       ├── routes.py      # API endpoints
+   │       └── schemas.py     # Pydantic models
+   ├── core/                  # Core processing logic
+   │   ├── pipeline.py        # Main orchestrator
+   │   ├── ocr_engine.py      # OCR integration
+   │   ├── document_classifier.py  # Document type detection
+   │   ├── extractor.py       # Field extraction
+   │   └── validators.py      # Data validation
+   ├── models/                # Data models
+   │   ├── payslip.py
+   │   ├── bank_statement.py
+   │   └── extraction_result.py
+   ├── config/                # Configuration files
+   │   ├── app_config.yaml
+   │   ├── extraction_config.json
+   │   └── ocr_config.json
+   ├── uploads/               # File storage
+   │   ├── raw/              # Original PDFs
+   │   └── processed/        # Converted images
+   ├── output/                # Results
+   │   ├── json/             # Extracted data
+   │   └── logs/             # Application logs
+   ├── .env                   # Environment variables
+   ├── requirements.txt       # Dependencies
+   └── postman_collection.json # API testing
+
+6. PROCESSING PIPELINE:
+   Step 1: User uploads PDF via POST /api/upload
+   Step 2: File save hoti hai uploads/raw/ mein
+   Step 3: PDF convert hota hai images mein (page-wise)
+   Step 4: OCR se text extract hota hai
+   Step 5: Document classify hota hai (Payslip/Bank Statement)
+   Step 6: Regex patterns se fields extract hote hain
+   Step 7: Data validate hota hai aur confidence score calculate hota hai
+   Step 8: Results save hote hain output/json/ mein
+   Step 9: User GET /api/result/{upload_id} se data retrieve karta hai
+
+7. CONFIGURATION:
+   - Server: Port 8003, host 0.0.0.0
+   - Max file size: 50MB
+   - OCR engine: PaddleOCR (default)
+   - Async background processing
+   - Comprehensive logging
+
+8. RESPONSE FORMAT:
+   {
+     "upload_id": "uuid",
+     "file_type": "pdf",
+     "total_documents": 1,
+     "documents": [
+       {
+         "document_number": 1,
+         "document_type": "payslip",
+         "extracted_data": {
+           "name": "...",
+           "id_number": "...",
+           "gross_income": "...",
+           "net_income": "...",
+           "total_deduction": "...",
+           "month_year": "..."
+         },
+         "confidence_score": 0.95,
+         "text_length": 916
+       }
+     ],
+     "summary": {
+       "payslips": 1,
+       "bank_statements": 0,
+       "average_confidence": 0.95
+     }
+   }
+
+9. IMPORTANT REQUIREMENTS:
+   - Production-ready code with proper error handling
+   - Async/await for background processing
+   - Proper logging configuration
+   - Environment variables for sensitive config
+   - Swagger UI documentation
+   - Postman collection for API testing
+   - Comprehensive README with setup instructions
+   - Clean, modular, maintainable code
+   - Type hints throughout
+   - Pydantic models for validation
+
+10. DELIVERABLES:
+    - Complete working code
+    - requirements.txt with all dependencies
+    - Configuration files (YAML, JSON)
+    - .env file template
+    - README.md with setup instructions
+    - API documentation
+    - Postman collection
+    - Sample test files
+
+Please create this complete project with all files, proper structure, and production-ready code. Make sure the code is well-documented and follows Python best practices.
+
+{"customer_id":"1108296","from_account_no":"011108296034","from_account_currency":"AED","to_account_no":"","transaction_amount":0,"transfer_currency":"AED","transfer_type":"S","charges_type":"SHA","swift":"AIINPKKA","check_constraint":true,"bank_country":"PK","idempotence_key":"95556092-0090-46d5-b135-47f2b3c816a7"}
